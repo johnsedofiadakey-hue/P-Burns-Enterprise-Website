@@ -12,10 +12,25 @@ export default function PreOrderPage() {
   const [quantity, setQuantity] = useState(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [customItemName, setCustomItemName] = useState('')
+  const [customDescription, setCustomDescription] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Pre-order request submitted (mock)')
+    
+    const itemToOrder = selectedItem === 'custom' 
+      ? `Custom: ${customItemName}` 
+      : preOrderItems.find(i => i.id === selectedItem)?.name;
+      
+    alert(`Pre-order request submitted for: ${itemToOrder} (Quantity: ${quantity})`)
+    
+    // Reset form
+    setSelectedItem('')
+    setQuantity(1)
+    setName('')
+    setEmail('')
+    setCustomItemName('')
+    setCustomDescription('')
   }
 
   return (
@@ -23,21 +38,29 @@ export default function PreOrderPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Direct Sourcing</span>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-4">Pre-Orders</h1>
-        <p className="text-gray-600 mb-12 max-w-3xl text-lg">
+        <p className="text-gray-800 mb-12 max-w-3xl text-lg">
           Order items directly from our China shipments before they arrive and enjoy better rates. 
-          Secure your items with a deposit.
+          Secure your items with a deposit. You can also make special requests for items not listed here.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Available Items */}
           <div>
-            <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Available for Pre-Order</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-serif font-bold text-[#111111]">Available for Pre-Order</h2>
+              <button 
+                onClick={() => setSelectedItem('custom')}
+                className="text-gold-600 hover:text-gold-700 font-bold text-sm uppercase tracking-wider"
+              >
+                Special Request &rarr;
+              </button>
+            </div>
             <div className="space-y-6">
               {preOrderItems.map(item => (
-                <div key={item.id} className="bg-white p-6 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 flex justify-between items-center gap-4">
+                <div key={item.id} className={`bg-white p-6 rounded-2xl shadow-xl shadow-charcoal-900/5 border transition-all ${selectedItem === item.id ? 'border-gold-500' : 'border-gray-100'} flex justify-between items-center gap-4`}>
                   <div>
                     <h3 className="text-lg font-serif font-bold text-[#111111]">{item.name}</h3>
-                    <p className="text-sm text-gray-500 mt-1">Estimated Arrival: {item.arrival}</p>
+                    <p className="text-sm text-gray-700 mt-1">Estimated Arrival: {item.arrival}</p>
                     <p className="text-gold-600 font-bold mt-2">GH₵ {item.price.toFixed(2)}</p>
                   </div>
                   <button 
@@ -52,11 +75,26 @@ export default function PreOrderPage() {
                   </button>
                 </div>
               ))}
+              
+              {/* Custom Request Card */}
+              <div 
+                onClick={() => setSelectedItem('custom')}
+                className={`bg-white p-6 rounded-2xl shadow-xl shadow-charcoal-900/5 border cursor-pointer transition-all ${selectedItem === 'custom' ? 'border-gold-500 bg-gold-50/10' : 'border-dashed border-gray-300 hover:border-gold-300'} flex justify-between items-center gap-4`}
+              >
+                <div>
+                  <h3 className="text-lg font-serif font-bold text-[#111111]">Special Request</h3>
+                  <p className="text-sm text-gray-700 mt-1">Request an item not listed above</p>
+                  <p className="text-gold-600 font-bold mt-2">Custom Pricing</p>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedItem === 'custom' ? 'border-gold-600 bg-gold-600 text-white' : 'border-gray-300'}`}>
+                  {selectedItem === 'custom' && '✓'}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Form */}
-          <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100">
+          <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 h-fit">
             <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Place Your Pre-Order</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -71,8 +109,35 @@ export default function PreOrderPage() {
                   {preOrderItems.map(item => (
                     <option key={item.id} value={item.id}>{item.name}</option>
                   ))}
+                  <option value="custom">Special Request / Custom Item</option>
                 </select>
               </div>
+
+              {selectedItem === 'custom' && (
+                <div className="space-y-4 border-l-4 border-gold-500 pl-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Item Name</label>
+                    <input 
+                      type="text" 
+                      value={customItemName}
+                      onChange={(e) => setCustomItemName(e.target.value)}
+                      required 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                      placeholder="What are you looking for?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Description / Specifications</label>
+                    <textarea 
+                      value={customDescription}
+                      onChange={(e) => setCustomDescription(e.target.value)}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                      placeholder="Size, color, material, etc."
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Quantity</label>
@@ -110,7 +175,7 @@ export default function PreOrderPage() {
 
               <button 
                 type="submit"
-                className="w-full py-4 bg-gold-600 text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20"
+                className="w-full py-4 bg-[#111111] text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20"
               >
                 Submit Pre-Order Request
               </button>
