@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { usePaystackPayment } from 'react-paystack'
+import Script from 'next/script'
 
 // Mock cart data (should be shared or fetched)
 const mockCartItems = [
@@ -22,25 +22,22 @@ export default function CheckoutPage() {
   const deliveryFee = 50.00
   const total = subtotal + deliveryFee
 
-  // Paystack configuration
-  const config = {
-    reference: (new Date()).getTime().toString(),
-    email: email,
-    amount: total * 100, // Paystack expects amount in pesewas (or kobo)
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
-  }
-
-  const initializePayment = usePaystackPayment(config)
-
-  const onSuccess = (reference: any) => {
-    console.log(reference)
-    alert('Payment successful! Reference: ' + reference.reference)
-    // Here you would save the order to the database via API
-    router.push('/checkout/success')
-  }
-
-  const onClose = () => {
-    alert('Payment closed')
+  const handlePaystackPayment = () => {
+    const handler = (window as any).PaystackPop.setup({
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
+      email: email,
+      amount: total * 100, // Paystack expects amount in pesewas
+      currency: 'GHS',
+      ref: (new Date()).getTime().toString(),
+      callback: function(response: any) {
+        alert('Payment successful! Reference: ' + response.reference)
+        router.push('/checkout/success')
+      },
+      onClose: function() {
+        alert('Payment closed')
+      }
+    });
+    handler.openIframe();
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,11 +46,15 @@ export default function CheckoutPage() {
       alert('Please fill in all fields')
       return
     }
-    initializePayment(onSuccess, onClose)
+    handlePaystackPayment()
   }
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen py-16">
+      <Script 
+        src="https://js.paystack.co/v1/inline.js" 
+        strategy="lazyOnload"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Secure Checkout</span>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-12">Checkout</h1>
@@ -145,5 +146,7 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
   )
 }
