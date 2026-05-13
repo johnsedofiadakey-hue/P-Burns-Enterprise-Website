@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
+import { db, storage } from '@/lib/firebase'
 import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 
 export default function ProductsPage() {
@@ -17,7 +18,9 @@ export default function ProductsPage() {
   const [stock, setStock] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -66,6 +69,16 @@ export default function ProductsPage() {
     setSaving(true)
     
     try {
+      let imageUrl = '/placeholder.png';
+      
+      if (imageFile) {
+        setUploading(true);
+        const storageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        imageUrl = await getDownloadURL(storageRef);
+        setUploading(false);
+      }
+      
       const docRef = await addDoc(collection(db, "products"), {
         name,
         description,
@@ -73,7 +86,7 @@ export default function ProductsPage() {
         stock: parseInt(stock),
         category,
         status,
-        image: '/placeholder.png',
+        image: imageUrl,
         createdAt: new Date().toISOString()
       });
       
@@ -86,6 +99,7 @@ export default function ProductsPage() {
       setStock('');
       setCategory('');
       setStatus('draft');
+      setImageFile(null);
       
       // Refresh list
       fetchProducts();
@@ -94,6 +108,7 @@ export default function ProductsPage() {
       showToast('Error creating product: ' + error.message, "error");
     } finally {
       setSaving(false)
+      setUploading(false)
     }
   }
 
@@ -198,8 +213,8 @@ export default function ProductsPage() {
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Name</label>
                 <input 
                   type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
                   required 
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                   placeholder="e.g. Italian Ceramic Vase"
@@ -209,8 +224,8 @@ export default function ProductsPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
                 <textarea 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                   placeholder="Describe the product details..."
@@ -223,8 +238,8 @@ export default function ProductsPage() {
                   <input 
                     type="number" 
                     step="0.01"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    value={price} 
+                    onChange={(e) => setPrice(e.target.value)} 
                     required 
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                     placeholder="0.00"
@@ -235,8 +250,8 @@ export default function ProductsPage() {
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Stock</label>
                   <input 
                     type="number" 
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
+                    value={stock} 
+                    onChange={(e) => setStock(e.target.value)} 
                     required 
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                     placeholder="0"
@@ -247,8 +262,8 @@ export default function ProductsPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Category</label>
                 <select 
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={category} 
+                  onChange={(e) => setCategory(e.target.value)} 
                   required
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
                 >
@@ -262,14 +277,27 @@ export default function ProductsPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
                 <select 
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  value={status} 
+                  onChange={(e) => setStatus(e.target.value)} 
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
                 >
                   <option value="active">Active</option>
                   <option value="draft">Draft</option>
                   <option value="out_of_stock">Out of Stock</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+                {imageFile && (
+                  <p className="text-xs text-gray-500 mt-1">Selected: {imageFile.name}</p>
+                )}
               </div>
             </form>
             
@@ -283,10 +311,10 @@ export default function ProductsPage() {
               </button>
               <button 
                 onClick={handleSubmit}
-                disabled={saving}
-                className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={saving || uploading}
+                className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${(saving || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {saving ? 'Saving...' : 'Save Product'}
+                {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save Product'}
               </button>
             </div>
           </div>
