@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Script from 'next/script'
+import { db } from '@/lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 // Mock cart data (should be shared or fetched)
 const mockCartItems = [
@@ -29,9 +31,27 @@ export default function CheckoutPage() {
       amount: total * 100, // Paystack expects amount in pesewas
       currency: 'GHS',
       ref: (new Date()).getTime().toString(),
-      callback: function(response: any) {
-        alert('Payment successful! Reference: ' + response.reference)
-        router.push('/checkout/success')
+      callback: async function(response: any) {
+        try {
+          await addDoc(collection(db, "orders"), {
+            orderNumber: 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            customerName: name,
+            email: email,
+            phone: phone,
+            address: address,
+            items: mockCartItems,
+            subtotal: subtotal,
+            deliveryFee: deliveryFee,
+            total: total,
+            status: 'pending',
+            paymentReference: response.reference,
+            createdAt: new Date().toISOString()
+          });
+          router.push('/checkout/success')
+        } catch (error) {
+          console.error("Error saving order:", error);
+          alert('Payment successful, but failed to save order to database. Please contact support.');
+        }
       },
       onClose: function() {
         alert('Payment closed')
