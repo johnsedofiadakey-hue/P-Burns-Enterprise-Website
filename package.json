@@ -13,6 +13,7 @@
     "@prisma/client": "^7.8.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
+    "firebase": "^12.13.0",
     "next": "16.2.6",
     "next-auth": "^4.24.14",
     "prisma": "^7.8.0",
