@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 export default function Sidebar({ email }: { email?: string | null }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   const links = [
     { href: '/admin', label: 'Dashboard', icon: '📊', category: 'Operations' },

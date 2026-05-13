@@ -22,9 +22,19 @@ export default async function AdminLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-800">Admin Portal</h1>
-          <div>
+        <header className="bg-white border-b border-gray-100 p-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {/* Spacer for mobile hamburger */}
+            <div className="w-10 lg:hidden"></div>
+            <h1 className="text-xl font-bold text-[#111111] uppercase tracking-wide">Admin Portal</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="w-8 h-8 bg-gold-500 rounded-full flex items-center justify-center text-[#111111] font-bold text-sm">
+                {session?.user?.email?.charAt(0).toUpperCase() || 'A'}
+              </span>
+              <span className="text-sm text-gray-600 font-medium">{session?.user?.email}</span>
+            </div>
             <LogoutButton />
           </div>
         </header>
