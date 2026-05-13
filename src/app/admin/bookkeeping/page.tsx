@@ -120,7 +120,7 @@ export default function BookkeepingPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Bookkeeping</h2>
-          <p className="text-sm text-gray-500">Track your income and expenses</p>
+          <p className="text-sm text-gray-700">Track your income and expenses</p>
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
@@ -135,21 +135,21 @@ export default function BookkeepingPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Income</p>
           <p className="text-3xl font-serif font-bold text-green-600 mt-2">GH₵ {totalIncome.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+          <div className="mt-2 text-xs text-gray-700 flex items-center gap-1">
             <span className="text-green-500 font-bold">↑</span> Money coming in
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Expenses</p>
           <p className="text-3xl font-serif font-bold text-red-600 mt-2">GH₵ {totalExpense.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+          <div className="mt-2 text-xs text-gray-700 flex items-center gap-1">
             <span className="text-red-500 font-bold">↓</span> Money going out
           </div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Net Profit</p>
           <p className="text-3xl font-serif font-bold text-gold-600 mt-2">GH₵ {netProfit.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+          <div className="mt-2 text-xs text-gray-700 flex items-center gap-1">
             <span className={netProfit >= 0 ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
               {netProfit >= 0 ? "↑" : "↓"}
             </span> 
@@ -194,7 +194,7 @@ export default function BookkeepingPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{t.category}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.description}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{t.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right">
                   <span className={t.type === 'income' ? 'text-green-600' : 'text-red-600'}>
                     {t.type === 'income' ? '+' : '-'} GH₵ {typeof t.amount === 'number' ? t.amount.toFixed(2) : t.amount}
@@ -225,7 +225,7 @@ export default function BookkeepingPage() {
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>
                 <h3 className="text-xl font-serif font-bold text-[#111111]">Add Transaction</h3>
-                <p className="text-xs text-gray-500 mt-1">Record a new income or expense</p>
+                <p className="text-xs text-gray-700 mt-1">Record a new income or expense</p>
               </div>
               <button 
                 onClick={() => setIsAddModalOpen(false)}

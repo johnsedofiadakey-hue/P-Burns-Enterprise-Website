@@ -127,7 +127,7 @@ export default function ProductsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Products</h2>
-          <p className="text-sm text-gray-500">Manage your inventory and stock</p>
+          <p className="text-sm text-gray-700">Manage your inventory and stock</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -141,33 +141,33 @@ export default function ProductsPage() {
         <table className="min-w-full divide-y divide-gray-100">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Name</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Category</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Price</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Stock</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Name</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Category</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Price</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Stock</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-50">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">Loading products...</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-600 font-medium">Loading products...</td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">No products found.</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-600 font-medium">No products found.</td>
               </tr>
             ) : products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{product.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.category}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.stock}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{product.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{product.stock}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
                     product.status === 'active' ? 'bg-green-50 text-green-700' : 
-                    product.status === 'draft' ? 'bg-gray-50 text-gray-600' : 'bg-red-50 text-red-700'
+                    product.status === 'draft' ? 'bg-gray-100 text-gray-700' : 'bg-red-50 text-red-700'
                   }`}>
                     {product.status === 'active' ? 'Active' : product.status === 'draft' ? 'Draft' : 'Out of Stock'}
                   </span>
@@ -198,7 +198,7 @@ export default function ProductsPage() {
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>
                 <h3 className="text-xl font-serif font-bold text-[#111111]">Add New Product</h3>
-                <p className="text-xs text-gray-500 mt-1">Fill in the details to add to inventory</p>
+                <p className="text-xs text-gray-700 mt-1">Fill in the details to add to inventory</p>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
@@ -296,7 +296,7 @@ export default function ProductsPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                 />
                 {imageFile && (
-                  <p className="text-xs text-gray-500 mt-1">Selected: {imageFile.name}</p>
+                  <p className="text-xs text-gray-700 mt-1">Selected: {imageFile.name}</p>
                 )}
               </div>
             </form>
@@ -305,7 +305,7 @@ export default function ProductsPage() {
               <button 
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-800 font-bold text-sm hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>

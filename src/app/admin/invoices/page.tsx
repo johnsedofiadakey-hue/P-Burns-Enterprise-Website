@@ -175,7 +175,7 @@ export default function InvoicesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Invoices</h2>
-          <p className="text-sm text-gray-500">Manage invoices, quotes, and receipts</p>
+          <p className="text-sm text-gray-700">Manage invoices, quotes, and receipts</p>
         </div>
         <button 
           onClick={() => setIsCreateModalOpen(true)}
@@ -191,7 +191,7 @@ export default function InvoicesPage() {
         {/* Left Sidebar - List of Invoices */}
         <div className="w-1/3 border-r border-gray-100 flex flex-col">
           <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">All Documents</span>
+            <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">All Documents</span>
             <span className="text-xs text-gray-400">{invoices.length} items</span>
           </div>
           
@@ -212,7 +212,7 @@ export default function InvoicesPage() {
                       <span className="font-bold text-[#111111]">{invoice.customer || 'Unknown Customer'}</span>
                       <span className="font-bold text-gold-600">GH₵ {typeof invoice.total === 'number' ? invoice.total.toFixed(2) : invoice.total}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
+                    <div className="flex justify-between items-center text-xs text-gray-700">
                       <span>{invoice.invoiceNumber} • {invoice.date}</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold capitalize ${
                         invoice.type === 'quote' ? 'bg-purple-50 text-purple-700' :
@@ -275,7 +275,7 @@ export default function InvoicesPage() {
                   <div>
                     <h1 className="text-3xl font-serif font-black text-[#111111]">P-BURNS</h1>
                     <p className="text-xs font-bold uppercase tracking-widest text-gold-600">Enterprise</p>
-                    <div className="text-xs text-gray-500 mt-2">
+                    <div className="text-xs text-gray-700 mt-2">
                       <p>Sefwi Dwirase Western North</p>
                       <p>Ghana</p>
                       <p>0537749190</p>
@@ -283,8 +283,8 @@ export default function InvoicesPage() {
                   </div>
                   <div className="text-right">
                     <h2 className="text-4xl font-serif font-bold text-[#111111] capitalize">{selectedInvoice.type || 'Invoice'}</h2>
-                    <p className="text-sm font-bold text-gray-600 mt-1"># {selectedInvoice.invoiceNumber}</p>
-                    <div className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm font-bold text-gray-800 mt-1"># {selectedInvoice.invoiceNumber}</p>
+                    <div className="text-sm text-gray-700 mt-2">
                       <p><span className="font-bold text-gray-700">Date:</span> {selectedInvoice.date}</p>
                       <p><span className="font-bold text-gray-700">Due Date:</span> {selectedInvoice.date}</p>
                     </div>
@@ -302,11 +302,11 @@ export default function InvoicesPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">#</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Item & Description</th>
-                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-widest">Qty</th>
-                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-widest">Rate</th>
-                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-widest">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-widest">#</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 uppercase tracking-widest">Item & Description</th>
+                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-800 uppercase tracking-widest">Qty</th>
+                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-800 uppercase tracking-widest">Rate</th>
+                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-800 uppercase tracking-widest">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -334,7 +334,7 @@ export default function InvoicesPage() {
                 {/* Totals */}
                 <div className="flex justify-end mb-12">
                   <div className="w-1/3 space-y-2 text-sm">
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-gray-800">
                       <span>Sub Total</span>
                       <span className="font-bold text-[#111111]">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</span>
                     </div>
@@ -352,7 +352,7 @@ export default function InvoicesPage() {
                 {/* Notes */}
                 <div className="border-t border-gray-100 pt-6">
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Notes</h4>
-                  <p className="text-xs text-gray-500">{selectedInvoice.notes || 'Thanks for your business.'}</p>
+                  <p className="text-xs text-gray-700">{selectedInvoice.notes || 'Thanks for your business.'}</p>
                 </div>
               </div>
             </div>
@@ -373,7 +373,7 @@ export default function InvoicesPage() {
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>
                 <h3 className="text-xl font-serif font-bold text-[#111111]">Create New Document</h3>
-                <p className="text-xs text-gray-500 mt-1">Invoice, Quote, or Receipt</p>
+                <p className="text-xs text-gray-700 mt-1">Invoice, Quote, or Receipt</p>
               </div>
               <button 
                 onClick={() => setIsCreateModalOpen(false)}
@@ -487,7 +487,7 @@ export default function InvoicesPage() {
 
               {/* Total Preview */}
               <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                <span className="text-sm font-bold text-gray-600 uppercase tracking-widest">Estimated Total:</span>
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-widest">Estimated Total:</span>
                 <span className="text-xl font-serif font-bold text-gold-600">GH₵ {calculateTotal().toFixed(2)}</span>
               </div>
             </form>

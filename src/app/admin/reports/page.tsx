@@ -53,7 +53,7 @@ export default function ReportsPage() {
     <div>
       <div className="mb-6">
         <h2 className="text-2xl font-serif font-bold text-[#111111]">Reports & Analytics</h2>
-        <p className="text-sm text-gray-500">Overview of your business performance</p>
+        <p className="text-sm text-gray-700">Overview of your business performance</p>
       </div>
 
       {/* Summary Cards */}
@@ -68,17 +68,17 @@ export default function ReportsPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Income</p>
           <p className="text-2xl font-serif font-bold text-green-600 mt-2">GH₵ {totalIncome.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500">From transactions</div>
+          <div className="mt-2 text-xs text-gray-700">From transactions</div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Expenses</p>
           <p className="text-2xl font-serif font-bold text-red-600 mt-2">GH₵ {totalExpense.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500">From transactions</div>
+          <div className="mt-2 text-xs text-gray-700">From transactions</div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Net Profit</p>
           <p className="text-2xl font-serif font-bold text-gold-600 mt-2">GH₵ {netProfit.toFixed(2)}</p>
-          <div className="mt-2 text-xs text-gray-500">Income - Expenses</div>
+          <div className="mt-2 text-xs text-gray-700">Income - Expenses</div>
         </div>
       </div>
 
@@ -122,28 +122,28 @@ export default function ReportsPage() {
           {/* Sales Report */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-2">Sales Report</h3>
-            <p className="text-gray-500 text-xs mb-4">View sales by date range, category, or product.</p>
+            <p className="text-gray-700 text-xs mb-4">View sales by date range, category, or product.</p>
             <button className="text-gold-600 hover:text-gold-700 font-bold text-xs uppercase tracking-wider">Generate &rarr;</button>
           </div>
 
           {/* Contract Report */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-2">Contract Report</h3>
-            <p className="text-gray-500 text-xs mb-4">Active, completed, and cancelled contracts summary.</p>
+            <p className="text-gray-700 text-xs mb-4">Active, completed, and cancelled contracts summary.</p>
             <button className="text-gold-600 hover:text-gold-700 font-bold text-xs uppercase tracking-wider">Generate &rarr;</button>
           </div>
 
           {/* Financial Report */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-2">Profit & Loss</h3>
-            <p className="text-gray-500 text-xs mb-4">Revenue vs Expenses breakdown by month.</p>
+            <p className="text-gray-700 text-xs mb-4">Revenue vs Expenses breakdown by month.</p>
             <button className="text-gold-600 hover:text-gold-700 font-bold text-xs uppercase tracking-wider">Generate &rarr;</button>
           </div>
 
           {/* Inventory Report */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-2">Stock Report</h3>
-            <p className="text-gray-500 text-xs mb-4">Low stock alerts and inventory valuation.</p>
+            <p className="text-gray-700 text-xs mb-4">Low stock alerts and inventory valuation.</p>
             <button className="text-gold-600 hover:text-gold-700 font-bold text-xs uppercase tracking-wider">Generate &rarr;</button>
           </div>
         </div>

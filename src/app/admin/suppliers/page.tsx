@@ -104,7 +104,7 @@ export default function SuppliersPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Supplier Management</h2>
-          <p className="text-sm text-gray-500">Manage your global and local suppliers</p>
+          <p className="text-sm text-gray-700">Manage your global and local suppliers</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
@@ -115,30 +115,30 @@ export default function SuppliersPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-500 text-sm">Loading suppliers...</div>
+        <div className="text-gray-700 text-sm">Loading suppliers...</div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Contact</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Country</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Type</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Contact</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Country</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Type</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {suppliers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm">No suppliers found.</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700 text-sm">No suppliers found.</td>
                 </tr>
               ) : (
                 suppliers.map((supplier) => (
                   <tr key={supplier.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{supplier.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{supplier.contact}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{supplier.country}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{supplier.contact}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{supplier.country}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 text-xs font-bold uppercase tracking-wider rounded ${
                         supplier.type === 'Ceramics' ? 'bg-amber-100 text-amber-800' :

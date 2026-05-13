@@ -95,7 +95,7 @@ export default function ServicesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Services</h2>
-          <p className="text-sm text-gray-500">Manage rates for additional services like transport and loading</p>
+          <p className="text-sm text-gray-700">Manage rates for additional services like transport and loading</p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
@@ -106,29 +106,29 @@ export default function ServicesPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-500 text-sm">Loading services...</div>
+        <div className="text-gray-700 text-sm">Loading services...</div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Description</th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Rate</th>
-                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Rate</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {services.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-sm">No services found.</td>
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-700 text-sm">No services found.</td>
                 </tr>
               ) : (
                 services.map((service) => (
                   <tr key={service.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{service.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{service.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">GH₵ {typeof service.rate === 'number' ? service.rate.toFixed(2) : parseFloat(service.rate || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{service.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">GH₵ {typeof service.rate === 'number' ? service.rate.toFixed(2) : parseFloat(service.rate || 0).toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <button 
                         onClick={() => handleDelete(service.id)}
