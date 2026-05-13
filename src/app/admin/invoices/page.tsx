@@ -186,10 +186,10 @@ export default function InvoicesPage() {
       </div>
 
       {/* Main Content Area - Split View */}
-      <div className="flex-1 flex bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <div className="flex-1 flex flex-col md:flex-row bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
         
         {/* Left Sidebar - List of Invoices */}
-        <div className="w-1/3 border-r border-gray-100 flex flex-col">
+        <div className={`${selectedInvoice ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-gray-100 flex flex-col`}>
           <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">All Documents</span>
             <span className="text-xs text-gray-400">{invoices.length} items</span>
@@ -231,12 +231,18 @@ export default function InvoicesPage() {
         </div>
 
         {/* Right Area - Invoice Detail / Preview */}
-        <div className="flex-1 flex flex-col bg-[#F3F4F6] overflow-y-auto">
+        <div className={`${selectedInvoice ? 'flex' : 'hidden md:flex'} flex-1 flex flex-col bg-[#F3F4F6] overflow-y-auto`}>
           {selectedInvoice ? (
             <div className="p-8">
               {/* Toolbar */}
               <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
                 <div className="flex gap-2">
+                  <button 
+                    onClick={() => setSelectedInvoice(null)} 
+                    className="md:hidden px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    ← Back
+                  </button>
                   <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Edit</button>
                   <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Send</button>
                   <button 

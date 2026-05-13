@@ -117,7 +117,7 @@ export default function SuppliersPage() {
       {loading ? (
         <div className="text-gray-700 text-sm">Loading suppliers...</div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm overflow-x-auto border border-gray-100">
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>

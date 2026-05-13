@@ -122,7 +122,7 @@ export default function ContractsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+      <div className="bg-white rounded-xl shadow-sm overflow-x-auto border border-gray-100">
         <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">All Contracts</span>
           <span className="text-xs text-gray-400">{contracts.length} items</span>

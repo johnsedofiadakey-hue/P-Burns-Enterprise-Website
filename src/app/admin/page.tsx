@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     <div>
       <div className="mb-6">
         <h2 className="text-2xl font-serif font-bold text-[#111111]">Dashboard</h2>
-        <p className="text-sm text-gray-500">Welcome to the P-Burns Enterprise Admin Portal</p>
+        <p className="text-sm text-gray-700">Welcome to the P-Burns Enterprise Admin Portal</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
           <p className="text-2xl font-serif font-bold text-gold-600 mt-2">
             {loading ? '...' : stats.pendingOrders}
           </p>
-          <div className="mt-2 text-xs text-gray-500">Awaiting processing</div>
+          <div className="mt-2 text-xs text-gray-700">Awaiting processing</div>
         </div>
       </div>
 
