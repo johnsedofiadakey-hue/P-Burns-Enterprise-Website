@@ -1,7 +1,29 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // Default content
+  let content = {
+    heroTitle: 'About P-Burns Enterprise',
+    heroDesc: 'Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.',
+    storyTitle: 'Built on Quality & Trust',
+    storyContent: 'Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.\n\nWhether you are working on a single-room renovation or a multi-story commercial project, we have the capacity and the expertise to supply and install materials that meet international standards.'
+  };
+
+  try {
+    const aboutSnap = await getDoc(doc(db, "settings", "about"));
+    if (aboutSnap.exists()) {
+      content = aboutSnap.data() as any;
+    }
+  } catch (error) {
+    console.error("Error fetching about content:", error);
+  }
+
+  // Split story content by newlines to create paragraphs
+  const paragraphs = content.storyContent.split('\n').filter(p => p.trim() !== '');
+
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
       {/* Hero Section */}
@@ -19,9 +41,9 @@ export default function AboutPage() {
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Our Story</span>
-          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">About P-Burns Enterprise</h1>
+          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">{content.heroTitle}</h1>
           <p className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.
+            {content.heroDesc}
           </p>
         </div>
       </section>
@@ -32,17 +54,14 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
               <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Heritage</span>
-              <h2 className="text-3xl font-serif font-bold text-[#111111] mb-6">Built on Quality & Trust</h2>
+              <h2 className="text-3xl font-serif font-bold text-[#111111] mb-6">{content.storyTitle}</h2>
               <div className="w-16 h-1 bg-gold-500 mb-6"></div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.
-              </p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                We specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Whether you are working on a single-room renovation or a multi-story commercial project, we have the capacity and the expertise to supply and install materials that meet international standards.
-              </p>
+              
+              <div className="space-y-6 text-gray-600 leading-relaxed">
+                {paragraphs.map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+              </div>
             </div>
             <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
               <Image

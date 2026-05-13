@@ -39,6 +39,12 @@ export default function SettingsPage() {
   const [stat3Label, setStat3Label] = useState('Global Partners')
   const [stat3Value, setStat3Value] = useState('20+')
   
+  // About Page
+  const [aboutHeroTitle, setAboutHeroTitle] = useState('About P-Burns Enterprise')
+  const [aboutHeroDesc, setAboutHeroDesc] = useState('Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.')
+  const [aboutStoryTitle, setAboutStoryTitle] = useState('Built on Quality & Trust')
+  const [aboutStoryContent, setAboutStoryContent] = useState('Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.')
+  
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -84,6 +90,15 @@ export default function SettingsPage() {
           setStat2Value(data.stat2Value || '10k+');
           setStat3Label(data.stat3Label || 'Global Partners');
           setStat3Value(data.stat3Value || '20+');
+        }
+        
+        const aboutSnap = await getDoc(doc(db, "settings", "about"));
+        if (aboutSnap.exists()) {
+          const data = aboutSnap.data();
+          setAboutHeroTitle(data.heroTitle || 'About P-Burns Enterprise');
+          setAboutHeroDesc(data.heroDesc || 'Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.');
+          setAboutStoryTitle(data.storyTitle || 'Built on Quality & Trust');
+          setAboutStoryContent(data.storyContent || 'Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -146,6 +161,15 @@ export default function SettingsPage() {
         updatedAt: new Date().toISOString()
       });
       
+      // Save about page settings
+      await setDoc(doc(db, "settings", "about"), {
+        heroTitle: aboutHeroTitle,
+        heroDesc: aboutHeroDesc,
+        storyTitle: aboutStoryTitle,
+        storyContent: aboutStoryContent,
+        updatedAt: new Date().toISOString()
+      });
+      
       showToast('Settings & branding updated successfully!');
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -200,6 +224,12 @@ export default function SettingsPage() {
           className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'stats' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
         >
           Interactive Stats
+        </button>
+        <button 
+          onClick={() => setActiveTab('about')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'about' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          About Page
         </button>
       </div>
 
@@ -474,6 +504,51 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: About Page */}
+        {activeTab === 'about' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">About Page Content</span>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Hero Title</label>
+                <input 
+                  type="text" 
+                  value={aboutHeroTitle} 
+                  onChange={(e) => setAboutHeroTitle(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Hero Description</label>
+                <textarea 
+                  value={aboutHeroDesc} 
+                  onChange={(e) => setAboutHeroDesc(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Story Title</label>
+                <input 
+                  type="text" 
+                  value={aboutStoryTitle} 
+                  onChange={(e) => setAboutStoryTitle(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Story Content</label>
+                <textarea 
+                  value={aboutStoryContent} 
+                  onChange={(e) => setAboutStoryContent(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-48" 
+                />
               </div>
             </div>
           </div>
