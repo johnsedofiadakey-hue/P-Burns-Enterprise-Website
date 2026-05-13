@@ -1,30 +1,50 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import Link from 'next/link'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const [stock, setStock] = useState('')
+  const [category, setCategory] = useState('')
+  const [status, setStatus] = useState('draft')
+  const [saving, setSaving] = useState(false)
+  
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const fetchedProducts = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      showToast("Error fetching products", "error")
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "products"));
-        const fetchedProducts = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setProducts(fetchedProducts);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -34,63 +54,114 @@ export default function ProductsPage() {
     try {
       await deleteDoc(doc(db, "products", id));
       setProducts(products.filter(p => p.id !== id));
+      showToast("Product deleted successfully!");
     } catch (error) {
       console.error("Error deleting product:", error);
-      alert('Error deleting product');
+      showToast("Error deleting product", "error");
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    
+    try {
+      const docRef = await addDoc(collection(db, "products"), {
+        name,
+        description,
+        price: parseFloat(price),
+        stock: parseInt(stock),
+        category,
+        status,
+        image: '/placeholder.png',
+        createdAt: new Date().toISOString()
+      });
+      
+      showToast('Product created successfully!');
+      setIsModalOpen(false);
+      // Reset form
+      setName('');
+      setDescription('');
+      setPrice('');
+      setStock('');
+      setCategory('');
+      setStatus('draft');
+      
+      // Refresh list
+      fetchProducts();
+    } catch (error: any) {
+      console.error("Error adding product:", error);
+      showToast('Error creating product: ' + error.message, "error");
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <div>
+    <div className="relative">
+      {/* Animated Toast */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 transform transition-all duration-300 ease-out translate-y-0 opacity-100 ${
+          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        } text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-2`}>
+          {toast.type === 'success' ? '✨' : '🛑'}
+          {toast.message}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Products</h2>
-        <Link 
-          href="/admin/products/new"
-          className="px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 transition-colors"
+        <div>
+          <h2 className="text-2xl font-serif font-bold text-[#111111]">Products</h2>
+          <p className="text-sm text-gray-500">Manage your inventory and stock</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 flex items-center gap-2"
         >
-          Add Product
-        </Link>
+          <span className="text-lg">+</span> Add Product
+        </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <table className="min-w-full divide-y divide-gray-100">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Name</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Category</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Price</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Stock</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-50">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Loading products...</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">Loading products...</td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No products found. Add one or visit /api/seed to populate!</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">No products found.</td>
               </tr>
             ) : products.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
+              <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{product.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.stock}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                    product.status === 'active' ? 'bg-green-50 text-green-700' : 
+                    product.status === 'draft' ? 'bg-gray-50 text-gray-600' : 'bg-red-50 text-red-700'
                   }`}>
-                    {product.status === 'active' ? 'Active' : 'Out of Stock'}
+                    {product.status === 'active' ? 'Active' : product.status === 'draft' ? 'Draft' : 'Out of Stock'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link href={`/admin/products/${product.id}/edit`} className="text-gold-600 hover:text-gold-900 mr-4">Edit</Link>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold flex gap-4">
+                  <Link href={`/admin/products/${product.id}/edit`} className="text-gold-600 hover:text-gold-700 transition-colors">Edit</Link>
                   <button 
                     onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-red-600 hover:text-red-700 transition-colors"
                   >
                     Delete
                   </button>
@@ -100,6 +171,127 @@ export default function ProductsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Slide-in Modal Overhaul */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+          {/* Overlay click to close */}
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)}></div>
+          
+          {/* Modal Content - Slide in from right */}
+          <div className="bg-white w-full max-w-md h-screen shadow-2xl relative z-10 flex flex-col transform transition-transform duration-300 ease-out translate-x-0">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-serif font-bold text-[#111111]">Add New Product</h3>
+                <p className="text-xs text-gray-500 mt-1">Fill in the details to add to inventory</p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-[#111111] transition-colors text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Name</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="e.g. Italian Ceramic Vase"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="Describe the product details..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Price (GH₵)</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Stock</label>
+                  <input 
+                    type="number" 
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Category</label>
+                <select 
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                >
+                  <option value="">Select a category</option>
+                  <option value="ceramics">Ceramics</option>
+                  <option value="doors">Doors</option>
+                  <option value="home_items">Home Items</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
+                <select 
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                >
+                  <option value="active">Active</option>
+                  <option value="draft">Draft</option>
+                  <option value="out_of_stock">Out of Stock</option>
+                </select>
+              </div>
+            </form>
+            
+            <div className="p-6 border-t border-gray-100 flex gap-4">
+              <button 
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSubmit}
+                disabled={saving}
+                className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {saving ? 'Saving...' : 'Save Product'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
