@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 export default function ReportsPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const fetchData = async () => {
       try {
         const transSnapshot = await getDocs(collection(db, "transactions"));
@@ -45,8 +48,6 @@ export default function ReportsPage() {
     { month: 'May', income: 7200, expense: 4500 },
     { month: 'Jun', income: netProfit > 0 ? netProfit : 8000, expense: totalExpense > 0 ? totalExpense : 5000 }, // Use real data for current month if available
   ]
-
-  const maxVal = Math.max(...monthlyData.map(d => Math.max(d.income, d.expense)))
 
   return (
     <div>
@@ -86,44 +87,33 @@ export default function ReportsPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-sm font-bold text-gray-600 uppercase tracking-widest">Revenue vs Expenses</h3>
-            <div className="flex gap-4 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                <span>Income</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                <span>Expense</span>
-              </div>
-            </div>
           </div>
           
-          <div className="flex items-end justify-between h-64 pt-4">
-            {monthlyData.map((data, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-2 flex-1">
-                <div className="flex gap-1 items-end h-48 w-full justify-center">
-                  {/* Income Bar */}
-                  <div 
-                    className="w-4 bg-green-500 rounded-t-sm hover:bg-green-600 transition-all cursor-pointer relative group"
-                    style={{ height: `${(data.income / maxVal) * 100}%` }}
-                  >
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg transition-opacity whitespace-nowrap">
-                      GH₵ {data.income}
-                    </div>
-                  </div>
-                  {/* Expense Bar */}
-                  <div 
-                    className="w-4 bg-red-500 rounded-t-sm hover:bg-red-600 transition-all cursor-pointer relative group"
-                    style={{ height: `${(data.expense / maxVal) * 100}%` }}
-                  >
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg transition-opacity whitespace-nowrap">
-                      GH₵ {data.expense}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-gray-500">{data.month}</span>
+          <div className="h-64">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={monthlyData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fontWeight: 'bold', fill: '#999' }} />
+                  <YAxis tick={{ fontSize: 12, fill: '#999' }} />
+                  <Tooltip 
+                    contentStyle={{ background: '#111', border: 'none', borderRadius: '8px', color: '#fff' }}
+                    labelStyle={{ fontWeight: 'bold', color: '#B68D40' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }} />
+                  <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="expense" name="Expense" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                Loading chart...
               </div>
-            ))}
+            )}
           </div>
         </div>
 
