@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDocFromServer } from 'firebase/firestore';
 
 export default async function Home() {
   // Default stats
@@ -15,7 +15,7 @@ export default async function Home() {
   };
 
   try {
-    const statsSnap = await getDoc(doc(db, "settings", "stats"));
+    const statsSnap = await getDocFromServer(doc(db, "settings", "stats"));
     if (statsSnap.exists()) {
       stats = statsSnap.data() as any;
     }
@@ -23,21 +23,61 @@ export default async function Home() {
     console.error("Error fetching stats:", error);
   }
 
+  // Default testimonials
+  let testimonials = {
+    t1Name: 'Kofi Annan',
+    t1Role: 'Project Manager, Accra',
+    t1Quote: '"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."',
+    t2Name: 'Ama Serwaa',
+    t2Role: 'Home Owner, Kumasi',
+    t2Quote: '"I requested a custom pre-order for a specific type of Italian door, and P-Burns handled everything from sourcing to delivery. Excellent service!"',
+    t3Name: 'Yaw Boateng',
+    t3Role: 'Architect, Takoradi',
+    t3Quote: '"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."'
+  };
+
+  try {
+    const testimonialsSnap = await getDocFromServer(doc(db, "settings", "testimonials"));
+    if (testimonialsSnap.exists()) {
+      testimonials = testimonialsSnap.data() as any;
+    }
+  } catch (error) {
+    console.error("Error fetching testimonials:", error);
+  }
+
   return (
     <div className="flex flex-col w-full bg-[#FAFAFA]">
       
       {/* Premium Hero Section */}
       <section className="relative bg-[#111111] text-white h-[85vh] min-h-[650px] flex items-center">
-        {/* Background Image with Deep Gradient Overlay */}
+        {/* Background Video with Deep Gradient Overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#111111] via-[#111111]/90 to-[#1A1A1A]/40 z-10" />
-          <Image
-            src="/hero_showroom.png"
-            alt="P-Burns Enterprise Showroom"
-            fill
-            className="object-cover opacity-50"
-            priority
-          />
+          <video 
+            id="hero-video"
+            autoPlay 
+            muted 
+            loop 
+            playsInline 
+            className="object-cover w-full h-full opacity-70"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+            {/* Fallback to image if video fails or is missing */}
+            <Image
+              src="/hero_showroom.png"
+              alt="P-Burns Enterprise Showroom"
+              fill
+              className="object-cover opacity-50"
+              priority
+            />
+          </video>
+          {/* Script to slow down video */}
+          <script dangerouslySetInnerHTML={{ __html: `
+            setTimeout(() => {
+              const video = document.getElementById('hero-video');
+              if (video) video.playbackRate = 0.25;
+            }, 1000);
+          ` }} />
         </div>
         
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -258,7 +298,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonials Slider (Static for now, but premium design) */}
+      {/* Testimonials Slider */}
       <section className="py-24 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -274,10 +314,10 @@ export default async function Home() {
                   <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 ))}
               </div>
-              <p className="text-gray-600 italic mb-6">"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."</p>
+              <p className="text-gray-600 italic mb-6">{testimonials.t1Quote}</p>
               <div>
-                <p className="font-bold text-[#111111]">Kofi Annan</p>
-                <p className="text-xs text-gray-500">Project Manager, Accra</p>
+                <p className="font-bold text-[#111111]">{testimonials.t1Name}</p>
+                <p className="text-xs text-gray-500">{testimonials.t1Role}</p>
               </div>
             </div>
             
@@ -287,10 +327,10 @@ export default async function Home() {
                   <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 ))}
               </div>
-              <p className="text-gray-600 italic mb-6">"I requested a custom pre-order for a specific type of Italian door, and P-Burns handled everything from sourcing to delivery. Excellent service!"</p>
+              <p className="text-gray-600 italic mb-6">{testimonials.t2Quote}</p>
               <div>
-                <p className="font-bold text-[#111111]">Ama Serwaa</p>
-                <p className="text-xs text-gray-500">Home Owner, Kumasi</p>
+                <p className="font-bold text-[#111111]">{testimonials.t2Name}</p>
+                <p className="text-xs text-gray-500">{testimonials.t2Role}</p>
               </div>
             </div>
             
@@ -300,10 +340,10 @@ export default async function Home() {
                   <svg key={i} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 ))}
               </div>
-              <p className="text-gray-600 italic mb-6">"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."</p>
+              <p className="text-gray-600 italic mb-6">{testimonials.t3Quote}</p>
               <div>
-                <p className="font-bold text-[#111111]">Yaw Boateng</p>
-                <p className="text-xs text-gray-500">Architect, Takoradi</p>
+                <p className="font-bold text-[#111111]">{testimonials.t3Name}</p>
+                <p className="text-xs text-gray-500">{testimonials.t3Role}</p>
               </div>
             </div>
           </div>

@@ -1,26 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Script from 'next/script'
 import { db } from '@/lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 
-// Mock cart data (should be shared or fetched)
-const mockCartItems = [
-  { id: '1', name: 'Ceramic Tile A', price: 120.00, quantity: 2 },
-  { id: '2', name: 'Wooden Door B', price: 450.00, quantity: 1 },
-]
-
 export default function CheckoutPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
+  const [cartItems, setCartItems] = useState<{id:string, name:string, price:number, quantity:number}[]>([])
   const router = useRouter()
 
-  const subtotal = mockCartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart))
+    }
+  }, [])
+
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
   const deliveryFee = 50.00
   const total = subtotal + deliveryFee
 
@@ -33,24 +35,32 @@ export default function CheckoutPage() {
       ref: (new Date()).getTime().toString(),
       callback: async function(response: any) {
         try {
-          await addDoc(collection(db, "orders"), {
-            orderNumber: 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-            customerName: name,
-            email: email,
-            phone: phone,
-            address: address,
-            items: mockCartItems,
-            subtotal: subtotal,
-            deliveryFee: deliveryFee,
-            total: total,
-            status: 'pending',
-            paymentReference: response.reference,
-            createdAt: new Date().toISOString()
+          const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              email,
+              phone,
+              address,
+              items: cartItems,
+              subtotal,
+              deliveryFee,
+              total,
+              paymentReference: response.reference
+            })
           });
-          router.push('/checkout/success')
+
+          const data = await res.json();
+          if (data.success) {
+            localStorage.removeItem('cart')
+            router.push('/checkout/success')
+          } else {
+            alert('Payment successful, but failed to process order. Please contact support.')
+          }
         } catch (error) {
           console.error("Error saving order:", error);
-          alert('Payment successful, but failed to save order to database. Please contact support.');
+          alert('Payment successful, but failed to process order. Please contact support.');
         }
       },
       onClose: function() {
@@ -140,7 +150,7 @@ export default function CheckoutPage() {
             <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 h-fit">
               <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Order Summary</h2>
               <div className="space-y-3 text-sm mb-6">
-                {mockCartItems.map((item) => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex justify-between text-gray-600">
                     <span>{item.name} <span className="text-gray-400">x {item.quantity}</span></span>
                     <span className="font-bold text-[#111111]">GH₵ {(item.price * item.quantity).toFixed(2)}</span>

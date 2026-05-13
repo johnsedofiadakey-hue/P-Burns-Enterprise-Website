@@ -22,6 +22,12 @@ export default function SettingsPage() {
   // Terms
   const [terms, setTerms] = useState('Payment is due within 30 days.')
   
+  // Social Media
+  const [tiktokUrl, setTiktokUrl] = useState('')
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [facebookUrl, setFacebookUrl] = useState('')
+  const [whatsappUrl, setWhatsappUrl] = useState('')
+  
   // Theme
   const [primaryColor, setPrimaryColor] = useState('#B68D40')
   const [secondaryColor, setSecondaryColor] = useState('#111111')
@@ -44,6 +50,32 @@ export default function SettingsPage() {
   const [aboutHeroDesc, setAboutHeroDesc] = useState('Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.')
   const [aboutStoryTitle, setAboutStoryTitle] = useState('Built on Quality & Trust')
   const [aboutStoryContent, setAboutStoryContent] = useState('Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.')
+  
+  // Testimonials
+  const [t1Name, setT1Name] = useState('Kofi Annan')
+  const [t1Role, setT1Role] = useState('Project Manager, Accra')
+  const [t1Quote, setT1Quote] = useState('"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."')
+  
+  const [t2Name, setT2Name] = useState('Ama Serwaa')
+  const [t2Role, setT2Role] = useState('Home Owner, Kumasi')
+  const [t2Quote, setT2Quote] = useState('"I requested a custom pre-order for a specific type of Italian door, and P-Burns handled everything from sourcing to delivery. Excellent service!"')
+  
+  const [t3Name, setT3Name] = useState('Yaw Boateng')
+  const [t3Role, setT3Role] = useState('Architect, Takoradi')
+  const [t3Quote, setT3Quote] = useState('"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."')
+  
+  // Projects
+  const [p1Title, setP1Title] = useState('Luxury Hotel Accra')
+  const [p1Desc, setP1Desc] = useState('Premium ceramic tiling for the entire lobby and suites.')
+  const [p1Image, setP1Image] = useState('/category_ceramics.png')
+  
+  const [p2Title, setP2Title] = useState('Private Mansion Kumasi')
+  const [p2Desc, setP2Desc] = useState('Custom imported security doors and window fixtures.')
+  const [p2Image, setP2Image] = useState('/category_doors.png')
+  
+  const [p3Title, setP3Title] = useState('Corporate Office Ridge')
+  const [p3Desc, setP3Desc] = useState('Modern glass partitions and accessories.')
+  const [p3Image, setP3Image] = useState('/category_home_items.png')
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -70,6 +102,10 @@ export default function SettingsPage() {
           setAccountName(data.accountName || '');
           setAccountNumber(data.accountNumber || '');
           setTerms(data.terms || '');
+          setTiktokUrl(data.tiktokUrl || '');
+          setInstagramUrl(data.instagramUrl || '');
+          setFacebookUrl(data.facebookUrl || '');
+          setWhatsappUrl(data.whatsappUrl || '');
         }
         
         const themeSnap = await getDoc(doc(db, "settings", "theme"));
@@ -99,6 +135,34 @@ export default function SettingsPage() {
           setAboutHeroDesc(data.heroDesc || 'Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.');
           setAboutStoryTitle(data.storyTitle || 'Built on Quality & Trust');
           setAboutStoryContent(data.storyContent || 'Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.');
+        }
+        
+        const testimonialsSnap = await getDoc(doc(db, "settings", "testimonials"));
+        if (testimonialsSnap.exists()) {
+          const data = testimonialsSnap.data();
+          setT1Name(data.t1Name || 'Kofi Annan');
+          setT1Role(data.t1Role || 'Project Manager, Accra');
+          setT1Quote(data.t1Quote || '"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."');
+          setT2Name(data.t2Name || 'Ama Serwaa');
+          setT2Role(data.t2Role || 'Home Owner, Kumasi');
+          setT2Quote(data.t2Quote || '"I requested a custom pre-order for a specific type of Italian door, and P-Burns handled everything from sourcing to delivery. Excellent service!"');
+          setT3Name(data.t3Name || 'Yaw Boateng');
+          setT3Role(data.t3Role || 'Architect, Takoradi');
+          setT3Quote(data.t3Quote || '"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."');
+        }
+
+        const projectsSnap = await getDoc(doc(db, "settings", "projects"));
+        if (projectsSnap.exists()) {
+          const data = projectsSnap.data();
+          setP1Title(data.p1Title || 'Luxury Hotel Accra');
+          setP1Desc(data.p1Desc || 'Premium ceramic tiling for the entire lobby and suites.');
+          setP1Image(data.p1Image || '/category_ceramics.png');
+          setP2Title(data.p2Title || 'Private Mansion Kumasi');
+          setP2Desc(data.p2Desc || 'Custom imported security doors and window fixtures.');
+          setP2Image(data.p2Image || '/category_doors.png');
+          setP3Title(data.p3Title || 'Corporate Office Ridge');
+          setP3Desc(data.p3Desc || 'Modern glass partitions and accessories.');
+          setP3Image(data.p3Image || '/category_home_items.png');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -141,6 +205,7 @@ export default function SettingsPage() {
       // Save general settings
       await setDoc(doc(db, "settings", "general"), {
         phone, email, address, bankName, accountName, accountNumber, terms,
+        tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
         updatedAt: new Date().toISOString()
       });
       
@@ -161,12 +226,27 @@ export default function SettingsPage() {
         updatedAt: new Date().toISOString()
       });
       
-      // Save about page settings
-      await setDoc(doc(db, "settings", "about"), {
-        heroTitle: aboutHeroTitle,
-        heroDesc: aboutHeroDesc,
-        storyTitle: aboutStoryTitle,
-        storyContent: aboutStoryContent,
+      // Save testimonials settings
+      await setDoc(doc(db, "settings", "testimonials"), {
+        t1Name, t1Role, t1Quote,
+        t2Name, t2Role, t2Quote,
+        t3Name, t3Role, t3Quote,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Save projects settings
+      await setDoc(doc(db, "settings", "projects"), {
+        p1Title, p1Desc, p1Image,
+        p2Title, p2Desc, p2Image,
+        p3Title, p3Desc, p3Image,
+        updatedAt: new Date().toISOString()
+      });
+      
+      // Save testimonials settings
+      await setDoc(doc(db, "settings", "testimonials"), {
+        t1Name, t1Role, t1Quote,
+        t2Name, t2Role, t2Quote,
+        t3Name, t3Role, t3Quote,
         updatedAt: new Date().toISOString()
       });
       
@@ -231,6 +311,18 @@ export default function SettingsPage() {
         >
           About Page
         </button>
+        <button 
+          onClick={() => setActiveTab('testimonials')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'testimonials' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Testimonials
+        </button>
+        <button 
+          onClick={() => setActiveTab('projects')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'projects' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Projects
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
@@ -270,6 +362,51 @@ export default function SettingsPage() {
                   rows={3} 
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                 />
+              </div>
+              <div className="border-t border-gray-100 pt-4 mt-4">
+                <h4 className="text-sm font-bold text-[#111111] uppercase tracking-tight mb-4">Social Media Links</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">TikTok</label>
+                    <input 
+                      type="text" 
+                      value={tiktokUrl} 
+                      onChange={(e) => setTiktokUrl(e.target.value)} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      placeholder="https://tiktok.com/@..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Instagram</label>
+                    <input 
+                      type="text" 
+                      value={instagramUrl} 
+                      onChange={(e) => setInstagramUrl(e.target.value)} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      placeholder="https://instagram.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Facebook</label>
+                    <input 
+                      type="text" 
+                      value={facebookUrl} 
+                      onChange={(e) => setFacebookUrl(e.target.value)} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      placeholder="https://facebook.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">WhatsApp</label>
+                    <input 
+                      type="text" 
+                      value={whatsappUrl} 
+                      onChange={(e) => setWhatsappUrl(e.target.value)} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      placeholder="https://wa.me/..."
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -549,6 +686,228 @@ export default function SettingsPage() {
                   onChange={(e) => setAboutStoryContent(e.target.value)} 
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-48" 
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Testimonials */}
+        {activeTab === 'testimonials' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Client Testimonials</span>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Testimonial 1 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Testimonial 1</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Name</label>
+                      <input 
+                        type="text" 
+                        value={t1Name} 
+                        onChange={(e) => setT1Name(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Role</label>
+                      <input 
+                        type="text" 
+                        value={t1Role} 
+                        onChange={(e) => setT1Role(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Quote</label>
+                      <textarea 
+                        value={t1Quote} 
+                        onChange={(e) => setT1Quote(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Testimonial 2 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Testimonial 2</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Name</label>
+                      <input 
+                        type="text" 
+                        value={t2Name} 
+                        onChange={(e) => setT2Name(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Role</label>
+                      <input 
+                        type="text" 
+                        value={t2Role} 
+                        onChange={(e) => setT2Role(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Quote</label>
+                      <textarea 
+                        value={t2Quote} 
+                        onChange={(e) => setT2Quote(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Testimonial 3 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Testimonial 3</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Name</label>
+                      <input 
+                        type="text" 
+                        value={t3Name} 
+                        onChange={(e) => setT3Name(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Role</label>
+                      <input 
+                        type="text" 
+                        value={t3Role} 
+                        onChange={(e) => setT3Role(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Quote</label>
+                      <textarea 
+                        value={t3Quote} 
+                        onChange={(e) => setT3Quote(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 7: Projects */}
+        {activeTab === 'projects' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Featured Projects</span>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Project 1 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Project 1</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Title</label>
+                      <input 
+                        type="text" 
+                        value={p1Title} 
+                        onChange={(e) => setP1Title(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
+                      <textarea 
+                        value={p1Desc} 
+                        onChange={(e) => setP1Desc(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <input 
+                        type="text" 
+                        value={p1Image} 
+                        onChange={(e) => setP1Image(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Project 2 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Project 2</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Title</label>
+                      <input 
+                        type="text" 
+                        value={p2Title} 
+                        onChange={(e) => setP2Title(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
+                      <textarea 
+                        value={p2Desc} 
+                        onChange={(e) => setP2Desc(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <input 
+                        type="text" 
+                        value={p2Image} 
+                        onChange={(e) => setP2Image(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project 3 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Project 3</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Title</label>
+                      <input 
+                        type="text" 
+                        value={p3Title} 
+                        onChange={(e) => setP3Title(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
+                      <textarea 
+                        value={p3Desc} 
+                        onChange={(e) => setP3Desc(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm h-24" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <input 
+                        type="text" 
+                        value={p3Image} 
+                        onChange={(e) => setP3Image(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

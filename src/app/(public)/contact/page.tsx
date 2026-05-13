@@ -1,12 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function ContactPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [settings, setSettings] = useState({
+    phone: '+233 123 456 789',
+    email: 'info@pburns.com',
+    address: '123 Street, Accra, Ghana'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { db } = await import('@/lib/firebase');
+        const { doc, getDoc } = await import('firebase/firestore');
+        const snap = await getDoc(doc(db, "settings", "general"));
+        if (snap.exists()) {
+          const data = snap.data();
+          setSettings({
+            phone: data.phone || '+233 123 456 789',
+            email: data.email || 'info@pburns.com',
+            address: data.address || '123 Street, Accra, Ghana'
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,6 +48,19 @@ export default function ContactPage() {
           Have questions about our products or services? Get in touch with us.
         </p>
 
+        {/* Showroom Map */}
+        <div className="w-full h-[400px] rounded-2xl overflow-hidden shadow-lg shadow-charcoal-900/10 mb-16 border border-gray-100">
+          <iframe 
+            src="https://maps.google.com/maps?q=6.211472,-2.477528&hl=en&z=15&output=embed" 
+            width="100%" 
+            height="100%" 
+            style={{ border: 0 }} 
+            allowFullScreen={true} 
+            loading="lazy" 
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Contact Info */}
           <div className="space-y-8">
@@ -30,28 +69,21 @@ export default function ContactPage() {
               <div className="space-y-6 text-gray-600">
                 <div>
                   <h3 className="font-bold text-[#111111] uppercase text-sm tracking-wide mb-1">Address</h3>
-                  <p className="text-sm">123 Street, Accra, Ghana</p>
+                  <p className="text-sm whitespace-pre-line">{settings.address}</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111111] uppercase text-sm tracking-wide mb-1">Phone</h3>
-                  <p className="text-sm">+233 123 456 789</p>
+                  <p className="text-sm">{settings.phone}</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111111] uppercase text-sm tracking-wide mb-1">Email</h3>
-                  <p className="text-sm">info@pburns.com</p>
+                  <p className="text-sm">{settings.email}</p>
                 </div>
                 <div>
                   <h3 className="font-bold text-[#111111] uppercase text-sm tracking-wide mb-1">Business Hours</h3>
                   <p className="text-sm">Monday - Friday: 8:00 AM - 5:00 PM</p>
                   <p className="text-sm">Saturday: 9:00 AM - 2:00 PM</p>
                 </div>
-              </div>
-            </div>
-            
-            {/* Map or image placeholder */}
-            <div className="relative h-64 bg-[#111111] rounded-2xl overflow-hidden hidden md:block">
-              <div className="absolute inset-0 bg-[#111111] flex items-center justify-center text-white text-sm font-bold uppercase tracking-wider">
-                Showroom Location
               </div>
             </div>
           </div>

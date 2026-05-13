@@ -14,8 +14,31 @@ const cormorantGaramond = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pburns.com'),
   title: "P-Burns Enterprise - Premium Ceramics & Doors",
-  description: "Quality products for your construction and home improvement projects. Sourced directly from top manufacturers.",
+  description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.",
+  keywords: ["ceramics", "doors", "tiles", "building materials", "Ghana", "construction", "pre-order"],
+  openGraph: {
+    title: "P-Burns Enterprise - Premium Ceramics & Doors",
+    description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.",
+    url: "https://pburns.com",
+    siteName: "P-Burns Enterprise",
+    images: [
+      {
+        url: "/logo_high_quality.png",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "en_GH",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "P-Burns Enterprise - Premium Ceramics & Doors",
+    description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.",
+    images: ["/logo_high_quality.png"],
+  },
 };
 
 export default function RootLayout({

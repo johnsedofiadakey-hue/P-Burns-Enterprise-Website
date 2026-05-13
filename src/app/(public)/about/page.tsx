@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDocFromServer } from 'firebase/firestore';
 
 export default async function AboutPage() {
   // Default content
@@ -13,7 +13,7 @@ export default async function AboutPage() {
   };
 
   try {
-    const aboutSnap = await getDoc(doc(db, "settings", "about"));
+    const aboutSnap = await getDocFromServer(doc(db, "settings", "about"));
     if (aboutSnap.exists()) {
       content = aboutSnap.data() as any;
     }

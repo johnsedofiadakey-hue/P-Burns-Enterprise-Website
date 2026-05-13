@@ -19,6 +19,7 @@ export default function ShopPage() {
   const [products, setProducts] = useState(initialProducts)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -43,6 +44,10 @@ export default function ShopPage() {
     const matchesCategory = selectedCategory ? product.category === selectedCategory : true
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
+  }).sort((a, b) => {
+    if (sortBy === 'price_low') return a.price - b.price;
+    if (sortBy === 'price_high') return b.price - a.price;
+    return 0;
   })
 
   return (
@@ -114,6 +119,8 @@ export default function ShopPage() {
                 <svg className="w-5 h-5 text-gray-400 absolute right-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </div>
               <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
                 className="px-5 py-3 bg-white border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 transition-colors text-sm text-gray-600"
               >
                 <option value="newest">Newest First</option>
@@ -168,7 +175,13 @@ export default function ShopPage() {
             {filteredProducts.length === 0 && (
               <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
                 <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M19.428 15.341A8 8 0 116.586 6.586 8 8 0 0119.428 15.341zM15 15l6 6"></path></svg>
-                <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+                <p className="text-gray-500 text-lg mb-6">No products found matching your criteria.</p>
+                <button 
+                  onClick={() => { setSelectedCategory(''); setSearchQuery(''); }}
+                  className="inline-flex items-center justify-center px-8 py-3 bg-gold-600 text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-500 transition-colors"
+                >
+                  Clear Filters
+                </button>
               </div>
             )}
 

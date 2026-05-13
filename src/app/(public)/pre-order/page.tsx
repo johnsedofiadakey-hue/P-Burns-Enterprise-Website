@@ -15,22 +15,43 @@ export default function PreOrderPage() {
   const [customItemName, setCustomItemName] = useState('')
   const [customDescription, setCustomDescription] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const itemToOrder = selectedItem === 'custom' 
       ? `Custom: ${customItemName}` 
       : preOrderItems.find(i => i.id === selectedItem)?.name;
       
-    alert(`Pre-order request submitted for: ${itemToOrder} (Quantity: ${quantity})`)
-    
-    // Reset form
-    setSelectedItem('')
-    setQuantity(1)
-    setName('')
-    setEmail('')
-    setCustomItemName('')
-    setCustomDescription('')
+    try {
+      const response = await fetch('/api/pre-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          itemToOrder,
+          quantity,
+          description: customDescription
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert(`Pre-order request submitted successfully! We have sent a confirmation email to ${email}.`)
+        // Reset form
+        setSelectedItem('')
+        setQuantity(1)
+        setName('')
+        setEmail('')
+        setCustomItemName('')
+        setCustomDescription('')
+      } else {
+        alert('Failed to submit request. Please try again.')
+      }
+    } catch (error) {
+      console.error("Error submitting pre-order:", error);
+      alert('An error occurred. Please try again.')
+    }
   }
 
   return (
