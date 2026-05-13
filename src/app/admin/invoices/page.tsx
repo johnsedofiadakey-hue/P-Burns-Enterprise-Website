@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
 import Link from 'next/link'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([])
@@ -125,6 +127,38 @@ export default function InvoicesPage() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('invoice-paper');
+    if (!element) return;
+    
+    showToast("Generating PDF...");
+    
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2, // High quality
+        useCORS: true // Handle images if any
+      });
+      const data = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4'
+      });
+      
+      const imgProperties = pdf.getImageProperties(data);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+      
+      pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${selectedInvoice.type || 'document'}-${selectedInvoice.invoiceNumber}.pdf`);
+      showToast("PDF downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      showToast("Error generating PDF", "error");
+    }
+  };
+
   return (
     <div className="relative h-[calc(100vh-120px)] flex flex-col">
       {/* Animated Toast */}
@@ -205,7 +239,12 @@ export default function InvoicesPage() {
                 <div className="flex gap-2">
                   <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Edit</button>
                   <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Send</button>
-                  <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Print/PDF</button>
+                  <button 
+                    onClick={handleDownloadPDF}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Print/PDF
+                  </button>
                 </div>
                 <div className="flex gap-2">
                   <button className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors">Record Payment</button>
@@ -218,8 +257,8 @@ export default function InvoicesPage() {
                 </div>
               </div>
 
-              {/* Invoice Paper Paper */}
-              <div className="bg-white max-w-4xl mx-auto p-12 rounded-lg shadow-xl relative min-h-[800px]">
+              {/* Invoice Paper */}
+              <div id="invoice-paper" className="bg-white max-w-4xl mx-auto p-12 rounded-lg shadow-xl relative min-h-[800px]">
                 {/* Status Badge */}
                 <div className="absolute top-0 right-0 m-6">
                   <span className={`px-4 py-1 text-xs font-bold uppercase tracking-widest rounded-full ${
