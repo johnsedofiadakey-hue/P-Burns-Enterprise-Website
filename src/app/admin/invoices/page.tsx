@@ -281,7 +281,7 @@ export default function InvoicesPage() {
                 <div className="flex justify-between mb-12">
                   <div>
                     <div className="mb-2">
-                      <Image src="/logo.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
+                      <Image src="/logo-transparent.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
                     </div>
                     <div className="text-xs text-gray-700 mt-2">
                       <p>Sefwi Dwirase Western North</p>

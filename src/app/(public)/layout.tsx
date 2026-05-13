@@ -41,7 +41,7 @@ export default function PublicLayout({
           <div className="flex justify-between items-center h-20">
             <div className="flex-shrink-0">
               <Link href="/" className="flex items-center">
-                <Image src="/logo.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
+                <Image src="/logo-transparent.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
               </Link>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -72,7 +72,7 @@ export default function PublicLayout({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div>
               <div className="mb-4">
-                <Image src="/logo.png" alt="P-Burns Logo" width={100} height={33} className="object-contain invert brightness-0" />
+                <Image src="/logo-transparent.png" alt="P-Burns Logo" width={100} height={33} className="object-contain invert brightness-0" />
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">Premium ceramics, luxury doors, and enterprise construction supplies sourced directly from top global manufacturers.</p>
             </div>

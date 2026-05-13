@@ -50,7 +50,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
       {/* Sidebar */}
       <aside className={`w-64 bg-[#111111] text-white flex flex-col fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static h-screen`}>
         <div className="p-6 border-b border-[#1A1A1A]">
-          <Image src="/logo.png" alt="P-Burns Logo" width={150} height={50} className="object-contain invert brightness-0" />
+          <Image src="/logo-transparent.png" alt="P-Burns Logo" width={150} height={50} className="object-contain invert brightness-0" />
         </div>
         
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
