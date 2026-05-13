@@ -6,6 +6,7 @@ import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
 import Link from 'next/link'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import Image from 'next/image'
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([])
@@ -279,8 +280,9 @@ export default function InvoicesPage() {
                 {/* Company Header */}
                 <div className="flex justify-between mb-12">
                   <div>
-                    <h1 className="text-3xl font-serif font-black text-[#111111]">P-BURNS</h1>
-                    <p className="text-xs font-bold uppercase tracking-widest text-gold-600">Enterprise</p>
+                    <div className="mb-2">
+                      <Image src="/logo.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
+                    </div>
                     <div className="text-xs text-gray-700 mt-2">
                       <p>Sefwi Dwirase Western North</p>
                       <p>Ghana</p>

@@ -1,10 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
+import { db, storage } from '@/lib/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import Image from 'next/image'
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState('company')
+  
+  // Company Info
   const [phone, setPhone] = useState('+233 123 456 789')
   const [email, setEmail] = useState('info@pburns.com')
   const [address, setAddress] = useState('123 Street, Accra, Ghana')
@@ -22,8 +27,13 @@ export default function SettingsPage() {
   const [secondaryColor, setSecondaryColor] = useState('#111111')
   const [backgroundColor, setBackgroundColor] = useState('#FAFAFA')
   
+  // Branding
+  const [logoUrl, setLogoUrl] = useState('')
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -54,6 +64,7 @@ export default function SettingsPage() {
           setPrimaryColor(data.primary || '#B68D40');
           setSecondaryColor(data.secondary || '#111111');
           setBackgroundColor(data.background || '#FAFAFA');
+          setLogoUrl(data.logoUrl || '');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -66,11 +77,33 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
 
+  const handleLogoUpload = async () => {
+    if (!logoFile) return logoUrl;
+    
+    setUploading(true);
+    try {
+      const storageRef = ref(storage, `branding/logo_${Date.now()}`);
+      const snapshot = await uploadBytes(storageRef, logoFile);
+      const url = await getDownloadURL(snapshot.ref);
+      setLogoUrl(url);
+      return url;
+    } catch (error: any) {
+      console.error("Error uploading logo:", error);
+      showToast("Error uploading logo: " + error.message, "error");
+      return logoUrl;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     
     try {
+      // Upload logo if changed
+      const currentLogoUrl = await handleLogoUpload();
+      
       // Save general settings
       await setDoc(doc(db, "settings", "general"), {
         phone, email, address, bankName, accountName, accountNumber, terms,
@@ -82,6 +115,7 @@ export default function SettingsPage() {
         primary: primaryColor,
         secondary: secondaryColor,
         background: backgroundColor,
+        logoUrl: currentLogoUrl,
         updatedAt: new Date().toISOString()
       });
       
@@ -94,7 +128,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-gray-500">Loading settings...</div>
+  if (loading) return <div className="p-6 text-gray-700">Loading settings...</div>
 
   return (
     <div className="relative">
@@ -111,164 +145,225 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-serif font-bold text-[#111111]">Settings & Customization</h2>
-        <p className="text-sm text-gray-500">Manage your business information, invoices, and branding in one place</p>
+        <p className="text-sm text-gray-700">Manage your business information, invoices, and branding in one place</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-6 mb-6 border-b border-gray-100 overflow-x-auto">
+        <button 
+          onClick={() => setActiveTab('company')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'company' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Company Info
+        </button>
+        <button 
+          onClick={() => setActiveTab('invoicing')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'invoicing' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Invoicing & Payments
+        </button>
+        <button 
+          onClick={() => setActiveTab('branding')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'branding' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Website Branding
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         
-        {/* Section 1: General & Contact */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 bg-gray-50">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">General & Contact Info</span>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Phone</label>
-                <input 
-                  type="text" 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-                />
+        {/* Tab 1: Company Info */}
+        {activeTab === 'company' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">General & Contact Info</span>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Phone</label>
+                  <input 
+                    type="text" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Email</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Address</label>
+                <textarea 
+                  value={address} 
+                  onChange={(e) => setAddress(e.target.value)} 
+                  rows={3} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Address</label>
-              <textarea 
-                value={address} 
-                onChange={(e) => setAddress(e.target.value)} 
-                rows={2} 
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-              />
-            </div>
           </div>
-        </div>
+        )}
 
-        {/* Section 2: Invoicing Settings */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 bg-gray-50">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Invoicing & Payments</span>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Bank Name</label>
-                <input 
-                  type="text" 
-                  value={bankName} 
-                  onChange={(e) => setBankName(e.target.value)} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-                />
+        {/* Tab 2: Invoicing Settings */}
+        {activeTab === 'invoicing' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Invoicing & Payments</span>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Bank Name</label>
+                  <input 
+                    type="text" 
+                    value={bankName} 
+                    onChange={(e) => setBankName(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Account Name</label>
+                  <input 
+                    type="text" 
+                    value={accountName} 
+                    onChange={(e) => setAccountName(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Account Number</label>
+                  <input 
+                    type="text" 
+                    value={accountNumber} 
+                    onChange={(e) => setAccountNumber(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Account Name</label>
-                <input 
-                  type="text" 
-                  value={accountName} 
-                  onChange={(e) => setAccountName(e.target.value)} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Account Number</label>
-                <input 
-                  type="text" 
-                  value={accountNumber} 
-                  onChange={(e) => setAccountNumber(e.target.value)} 
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Invoice Terms & Conditions</label>
+                <textarea 
+                  value={terms} 
+                  onChange={(e) => setTerms(e.target.value)} 
+                  rows={4} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Invoice Terms & Conditions</label>
-              <textarea 
-                value={terms} 
-                onChange={(e) => setTerms(e.target.value)} 
-                rows={3} 
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-              />
-            </div>
           </div>
-        </div>
+        )}
 
-        {/* Section 3: Branding & Customization */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 bg-gray-50">
-            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Branding & Customization</span>
-          </div>
-          <div className="p-6 space-y-4">
-            <p className="text-sm text-gray-500 mb-2">Change the colors of the public website.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Tab 3: Branding & Customization */}
+        {activeTab === 'branding' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Branding & Customization</span>
+            </div>
+            <div className="p-6 space-y-6">
+              {/* Logo Upload */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Primary Color (Gold)</label>
-                <div className="flex gap-2 items-center">
-                  <input 
-                    type="color" 
-                    value={primaryColor} 
-                    onChange={(e) => setPrimaryColor(e.target.value)} 
-                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
-                  />
-                  <input 
-                    type="text" 
-                    value={primaryColor} 
-                    onChange={(e) => setPrimaryColor(e.target.value)} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
-                  />
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Company Logo</label>
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                  <div className="w-32 h-32 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center overflow-hidden relative">
+                    {logoUrl ? (
+                      <Image src={logoUrl} alt="Logo Preview" fill className="object-contain p-2" />
+                    ) : (
+                      <span className="text-xs text-gray-400">No Logo</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                      className="hidden" 
+                      id="logo-upload"
+                    />
+                    <label 
+                      htmlFor="logo-upload"
+                      className="px-4 py-2 bg-[#111111] text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-600 transition-colors cursor-pointer inline-block mb-2"
+                    >
+                      {uploading ? 'Uploading...' : 'Choose Logo'}
+                    </label>
+                    <p className="text-xs text-gray-700">Recommended: Square PNG with transparent background.</p>
+                    {logoFile && <p className="text-xs text-gold-600 mt-1 font-bold">Selected: {logoFile.name}</p>}
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Secondary Color (Charcoal)</label>
-                <div className="flex gap-2 items-center">
-                  <input 
-                    type="color" 
-                    value={secondaryColor} 
-                    onChange={(e) => setSecondaryColor(e.target.value)} 
-                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
-                  />
-                  <input 
-                    type="text" 
-                    value={secondaryColor} 
-                    onChange={(e) => setSecondaryColor(e.target.value)} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Background Color</label>
-                <div className="flex gap-2 items-center">
-                  <input 
-                    type="color" 
-                    value={backgroundColor} 
-                    onChange={(e) => setBackgroundColor(e.target.value)} 
-                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
-                  />
-                  <input 
-                    type="text" 
-                    value={backgroundColor} 
-                    onChange={(e) => setBackgroundColor(e.target.value)} 
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
-                  />
+
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="text-sm font-bold text-[#111111] uppercase tracking-tight mb-4">Website Colors</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Primary Color (Gold)</label>
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="color" 
+                        value={primaryColor} 
+                        onChange={(e) => setPrimaryColor(e.target.value)} 
+                        className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
+                      />
+                      <input 
+                        type="text" 
+                        value={primaryColor} 
+                        onChange={(e) => setPrimaryColor(e.target.value)} 
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Secondary Color (Charcoal)</label>
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="color" 
+                        value={secondaryColor} 
+                        onChange={(e) => setSecondaryColor(e.target.value)} 
+                        className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
+                      />
+                      <input 
+                        type="text" 
+                        value={secondaryColor} 
+                        onChange={(e) => setSecondaryColor(e.target.value)} 
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Background Color</label>
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="color" 
+                        value={backgroundColor} 
+                        onChange={(e) => setBackgroundColor(e.target.value)} 
+                        className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
+                      />
+                      <input 
+                        type="text" 
+                        value={backgroundColor} 
+                        onChange={(e) => setBackgroundColor(e.target.value)} 
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex justify-end mt-6">
           <button 
             type="submit"
-            disabled={saving}
-            className={`px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={saving || uploading}
+            className={`px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${(saving || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {saving ? 'Saving...' : 'Save All Settings'}
           </button>

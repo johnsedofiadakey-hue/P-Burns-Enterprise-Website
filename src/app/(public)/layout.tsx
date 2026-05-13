@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,8 +40,8 @@ export default function PublicLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex-shrink-0">
-              <Link href="/" className="text-2xl font-black text-white uppercase tracking-tight">
-                P-Burns<span className="text-gold-500">.</span>
+              <Link href="/" className="flex items-center">
+                <Image src="/logo.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
               </Link>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -70,7 +71,9 @@ export default function PublicLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tight mb-4">P-Burns<span className="text-gold-500">.</span></h3>
+              <div className="mb-4">
+                <Image src="/logo.png" alt="P-Burns Logo" width={100} height={33} className="object-contain invert brightness-0" />
+              </div>
               <p className="text-gray-400 text-sm leading-relaxed">Premium ceramics, luxury doors, and enterprise construction supplies sourced directly from top global manufacturers.</p>
             </div>
             <div>
