@@ -20,6 +20,7 @@ export default function SettingsPage() {
   // Theme
   const [primaryColor, setPrimaryColor] = useState('#B68D40')
   const [secondaryColor, setSecondaryColor] = useState('#111111')
+  const [backgroundColor, setBackgroundColor] = useState('#FAFAFA')
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -52,6 +53,7 @@ export default function SettingsPage() {
           const data = themeSnap.data();
           setPrimaryColor(data.primary || '#B68D40');
           setSecondaryColor(data.secondary || '#111111');
+          setBackgroundColor(data.background || '#FAFAFA');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -79,11 +81,11 @@ export default function SettingsPage() {
       await setDoc(doc(db, "settings", "theme"), {
         primary: primaryColor,
         secondary: secondaryColor,
-        background: '#FAFAFA', // Default
+        background: backgroundColor,
         updatedAt: new Date().toISOString()
       });
       
-      showToast('Settings updated successfully!');
+      showToast('Settings & branding updated successfully!');
     } catch (error) {
       console.error("Error saving settings:", error);
       showToast('Error saving settings', 'error');
@@ -108,21 +110,19 @@ export default function SettingsPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-serif font-bold text-[#111111]">Site & Invoice Settings</h2>
-        <p className="text-sm text-gray-500">Manage your business information and theme</p>
+        <h2 className="text-2xl font-serif font-bold text-[#111111]">Settings & Customization</h2>
+        <p className="text-sm text-gray-500">Manage your business information, invoices, and branding in one place</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 max-w-4xl overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
-          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Configuration</span>
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
-          
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-4">Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Section 1: General & Contact */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 bg-gray-50">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">General & Contact Info</span>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Phone</label>
                 <input 
@@ -142,7 +142,7 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-            <div className="mt-4">
+            <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Address</label>
               <textarea 
                 value={address} 
@@ -152,13 +152,15 @@ export default function SettingsPage() {
               />
             </div>
           </div>
+        </div>
 
-          <hr className="border-gray-100" />
-
-          {/* Bank Details */}
-          <div>
-            <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-4">Bank Details (For Invoices)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Section 2: Invoicing Settings */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 bg-gray-50">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Invoicing & Payments</span>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Bank Name</label>
                 <input 
@@ -187,75 +189,91 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Invoice Terms & Conditions</label>
+              <textarea 
+                value={terms} 
+                onChange={(e) => setTerms(e.target.value)} 
+                rows={3} 
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+              />
+            </div>
           </div>
+        </div>
 
-          <hr className="border-gray-100" />
-
-          {/* Terms */}
-          <div>
-            <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-4">Invoice Terms & Conditions</h3>
-            <textarea 
-              value={terms} 
-              onChange={(e) => setTerms(e.target.value)} 
-              rows={3} 
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
-            />
+        {/* Section 3: Branding & Customization */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 bg-gray-50">
+            <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Branding & Customization</span>
           </div>
-
-          <hr className="border-gray-100" />
-
-          {/* Theme */}
-          <div>
-            <h3 className="text-sm font-bold text-[#111111] uppercase tracking-widest mb-4">Theme Colors</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 space-y-4">
+            <p className="text-sm text-gray-500 mb-2">Change the colors of the public website.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Primary Color (Gold)</label>
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-2 items-center">
                   <input 
                     type="color" 
                     value={primaryColor} 
                     onChange={(e) => setPrimaryColor(e.target.value)} 
-                    className="w-16 h-12 border border-gray-200 rounded-lg cursor-pointer" 
+                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
                   />
                   <input 
                     type="text" 
                     value={primaryColor} 
                     onChange={(e) => setPrimaryColor(e.target.value)} 
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Secondary Color (Charcoal)</label>
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-2 items-center">
                   <input 
                     type="color" 
                     value={secondaryColor} 
                     onChange={(e) => setSecondaryColor(e.target.value)} 
-                    className="w-16 h-12 border border-gray-200 rounded-lg cursor-pointer" 
+                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
                   />
                   <input 
                     type="text" 
                     value={secondaryColor} 
                     onChange={(e) => setSecondaryColor(e.target.value)} 
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Background Color</label>
+                <div className="flex gap-2 items-center">
+                  <input 
+                    type="color" 
+                    value={backgroundColor} 
+                    onChange={(e) => setBackgroundColor(e.target.value)} 
+                    className="w-12 h-10 border border-gray-200 rounded-lg cursor-pointer" 
+                  />
+                  <input 
+                    type="text" 
+                    value={backgroundColor} 
+                    onChange={(e) => setBackgroundColor(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                   />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="flex justify-end mt-6">
-            <button 
-              type="submit"
-              disabled={saving}
-              className={`px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {saving ? 'Saving...' : 'Save Settings'}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="flex justify-end mt-6">
+          <button 
+            type="submit"
+            disabled={saving}
+            className={`px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {saving ? 'Saving...' : 'Save All Settings'}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }

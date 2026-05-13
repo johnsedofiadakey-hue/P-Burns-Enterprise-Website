@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
-import ThemeSettings from '@/components/ThemeSettings'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -73,15 +72,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Theme Settings */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
-          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">System Theme</span>
-        </div>
-        <div className="p-6">
-          <ThemeSettings />
-        </div>
-      </div>
     </div>
   )
 }
