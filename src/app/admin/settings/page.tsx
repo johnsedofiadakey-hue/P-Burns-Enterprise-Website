@@ -31,6 +31,14 @@ export default function SettingsPage() {
   const [logoUrl, setLogoUrl] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
   
+  // Interactive Stats
+  const [stat1Label, setStat1Label] = useState('Projects Completed')
+  const [stat1Value, setStat1Value] = useState('500+')
+  const [stat2Label, setStat2Label] = useState('Tiles Delivered')
+  const [stat2Value, setStat2Value] = useState('10k+')
+  const [stat3Label, setStat3Label] = useState('Global Partners')
+  const [stat3Value, setStat3Value] = useState('20+')
+  
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -65,6 +73,17 @@ export default function SettingsPage() {
           setSecondaryColor(data.secondary || '#111111');
           setBackgroundColor(data.background || '#FAFAFA');
           setLogoUrl(data.logoUrl || '');
+        }
+        
+        const statsSnap = await getDoc(doc(db, "settings", "stats"));
+        if (statsSnap.exists()) {
+          const data = statsSnap.data();
+          setStat1Label(data.stat1Label || 'Projects Completed');
+          setStat1Value(data.stat1Value || '500+');
+          setStat2Label(data.stat2Label || 'Tiles Delivered');
+          setStat2Value(data.stat2Value || '10k+');
+          setStat3Label(data.stat3Label || 'Global Partners');
+          setStat3Value(data.stat3Value || '20+');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -119,6 +138,14 @@ export default function SettingsPage() {
         updatedAt: new Date().toISOString()
       });
       
+      // Save stats settings
+      await setDoc(doc(db, "settings", "stats"), {
+        stat1Label, stat1Value,
+        stat2Label, stat2Value,
+        stat3Label, stat3Value,
+        updatedAt: new Date().toISOString()
+      });
+      
       showToast('Settings & branding updated successfully!');
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -167,6 +194,12 @@ export default function SettingsPage() {
           className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'branding' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
         >
           Website Branding
+        </button>
+        <button 
+          onClick={() => setActiveTab('stats')} 
+          className={`pb-3 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap ${activeTab === 'stats' ? 'border-b-2 border-gold-500 text-[#111111]' : 'text-gray-400 hover:text-[#111111]'}`}
+        >
+          Interactive Stats
         </button>
       </div>
 
@@ -350,6 +383,93 @@ export default function SettingsPage() {
                         value={backgroundColor} 
                         onChange={(e) => setBackgroundColor(e.target.value)} 
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Interactive Stats */}
+        {activeTab === 'stats' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Interactive Stats</span>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Stat 1 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Stat 1</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Label</label>
+                      <input 
+                        type="text" 
+                        value={stat1Label} 
+                        onChange={(e) => setStat1Label(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Value</label>
+                      <input 
+                        type="text" 
+                        value={stat1Value} 
+                        onChange={(e) => setStat1Value(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Stat 2 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Stat 2</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Label</label>
+                      <input 
+                        type="text" 
+                        value={stat2Label} 
+                        onChange={(e) => setStat2Label(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Value</label>
+                      <input 
+                        type="text" 
+                        value={stat2Value} 
+                        onChange={(e) => setStat2Value(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Stat 3 */}
+                <div className="border border-gray-100 rounded-lg p-4">
+                  <h4 className="text-sm font-bold text-[#111111] uppercase mb-4">Stat 3</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Label</label>
+                      <input 
+                        type="text" 
+                        value={stat3Label} 
+                        onChange={(e) => setStat3Label(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Value</label>
+                      <input 
+                        type="text" 
+                        value={stat3Value} 
+                        onChange={(e) => setStat3Value(e.target.value)} 
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                       />
                     </div>
                   </div>
