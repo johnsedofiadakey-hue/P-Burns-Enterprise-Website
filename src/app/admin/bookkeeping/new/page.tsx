@@ -2,20 +2,40 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { db } from '@/lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 export default function NewTransactionPage() {
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [type, setType] = useState('income')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ date, type, category, description, amount })
-    alert('Transaction recorded (mock)')
-    router.push('/admin/bookkeeping')
+    setLoading(true)
+    
+    try {
+      await addDoc(collection(db, "transactions"), {
+        date,
+        type,
+        category,
+        description,
+        amount: parseFloat(amount),
+        createdAt: new Date().toISOString()
+      });
+      
+      alert('Transaction recorded successfully!')
+      router.push('/admin/bookkeeping')
+    } catch (error: any) {
+      console.error("Error adding transaction:", error);
+      alert('Error recording transaction: ' + error.message);
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,7 +51,7 @@ export default function NewTransactionPage() {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required 
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
             />
           </div>
 
@@ -40,7 +60,7 @@ export default function NewTransactionPage() {
             <select 
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500"
             >
               <option value="income">Income</option>
               <option value="expense">Expense</option>
@@ -55,7 +75,7 @@ export default function NewTransactionPage() {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               required 
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
             />
           </div>
 
@@ -65,7 +85,7 @@ export default function NewTransactionPage() {
               type="text" 
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
             />
           </div>
 
@@ -77,7 +97,7 @@ export default function NewTransactionPage() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required 
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
             />
           </div>
 
@@ -91,9 +111,10 @@ export default function NewTransactionPage() {
             </button>
             <button 
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              disabled={loading}
+              className={`px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Save Transaction
+              {loading ? 'Saving...' : 'Save Transaction'}
             </button>
           </div>
         </form>

@@ -15,30 +15,30 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-emerald-900 text-white flex flex-col">
-        <div className="p-6 text-xl font-bold border-b border-emerald-800">
+      <aside className="w-64 bg-[#111111] text-white flex flex-col">
+        <div className="p-6 text-xl font-serif font-bold border-b border-[#1A1A1A]">
           P-Burns Admin
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <a href="/admin" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Dashboard</a>
-          <a href="/admin/products" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Products</a>
-          <a href="/admin/categories" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Categories</a>
-          <a href="/admin/orders" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Orders</a>
-          <a href="/admin/customers" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Customers</a>
-          <a href="/admin/pre-orders" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Pre-Orders</a>
-          <a href="/admin/contracts" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Contracts</a>
-          <a href="/admin/services" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Services</a>
-          <a href="/admin/invoices" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Invoices</a>
-          <a href="/admin/bookkeeping" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Bookkeeping</a>
-          <a href="/admin/suppliers" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Suppliers</a>
-          <a href="/admin/reports" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Reports</a>
-          <a href="/admin/users" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Users</a>
-          <a href="/admin/settings" className="block px-4 py-2 rounded-md hover:bg-emerald-800">Settings</a>
+          <a href="/admin" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Dashboard</a>
+          <a href="/admin/products" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Products</a>
+          <a href="/admin/categories" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Categories</a>
+          <a href="/admin/orders" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Orders</a>
+          <a href="/admin/customers" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Customers</a>
+          <a href="/admin/pre-orders" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Pre-Orders</a>
+          <a href="/admin/contracts" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Contracts</a>
+          <a href="/admin/services" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Services</a>
+          <a href="/admin/invoices" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Invoices</a>
+          <a href="/admin/bookkeeping" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Bookkeeping</a>
+          <a href="/admin/suppliers" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Suppliers</a>
+          <a href="/admin/reports" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Reports</a>
+          <a href="/admin/users" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Users</a>
+          <a href="/admin/settings" className="block px-4 py-2 rounded-lg hover:bg-[#1A1A1A] hover:text-gold-500 transition-colors">Settings</a>
         </nav>
-        <div className="p-4 border-t border-emerald-800">
-          <div className="text-sm truncate">{session.user?.email}</div>
+        <div className="p-4 border-t border-[#1A1A1A]">
+          <div className="text-sm truncate text-gray-400">{session.user?.email}</div>
         </div>
       </aside>
 

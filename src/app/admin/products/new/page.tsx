@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { db } from '@/lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 export default function NewProductPage() {
   const [name, setName] = useState('')
@@ -10,14 +12,33 @@ export default function NewProductPage() {
   const [stock, setStock] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In the future, this will call a server action or API to save to Prisma
-    console.log({ name, description, price, stock, category, status })
-    alert('Product created (mock)')
-    router.push('/admin/products')
+    setLoading(true)
+    
+    try {
+      await addDoc(collection(db, "products"), {
+        name,
+        description,
+        price: parseFloat(price),
+        stock: parseInt(stock),
+        category,
+        status,
+        image: '/placeholder.png', // Default placeholder for now
+        createdAt: new Date().toISOString()
+      });
+      
+      alert('Product created successfully!')
+      router.push('/admin/products')
+    } catch (error: any) {
+      console.error("Error adding product:", error);
+      alert('Error creating product: ' + error.message);
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -111,9 +132,10 @@ export default function NewProductPage() {
               </button>
               <button 
                 type="submit"
-                className="px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700"
+                disabled={loading}
+                className={`px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Save Product
+                {loading ? 'Saving...' : 'Save Product'}
               </button>
             </div>
           </form>

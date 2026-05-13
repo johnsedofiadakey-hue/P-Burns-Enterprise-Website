@@ -1,0 +1,18 @@
+# Configuration for Firebase App Hosting
+# This file tells Firebase how to build and run your Next.js app.
+
+# Learn more at https://firebase.google.com/docs/app-hosting
+
+# Settings for the build process
+build:
+  # The Node.js version to use
+  nodeVersion: "20"
+  
+# Settings for the run process
+run:
+  # Environment variables for the app
+  env:
+    - key: NEXTAUTH_URL
+      value: "https://your-app-url.web.app"
+    - key: NEXTAUTH_SECRET
+      value: "your-secret-here"

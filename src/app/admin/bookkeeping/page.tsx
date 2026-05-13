@@ -1,15 +1,47 @@
-import Link from 'next/link'
+'use client'
 
-// Mock data
-const transactions = [
-  { id: '1', date: '2026-05-10', type: 'income', category: 'Sales', description: 'Invoice INV-001', amount: 690.00 },
-  { id: '2', date: '2026-05-11', type: 'expense', category: 'Purchase', description: 'Bought tiles from supplier', amount: 500.00 },
-  { id: '3', date: '2026-05-12', type: 'income', category: 'Service', description: 'Transport service', amount: 200.00 },
-]
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { db } from '@/lib/firebase'
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 
 export default function BookkeepingPage() {
-  const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0)
-  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "transactions"));
+        const fetchedTransactions = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTransactions(fetchedTransactions);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    
+    try {
+      await deleteDoc(doc(db, "transactions", id));
+      setTransactions(transactions.filter(t => t.id !== id));
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      alert('Error deleting transaction');
+    }
+  };
+
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount)), 0)
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount)), 0)
   const netProfit = totalIncome - totalExpense
 
   return (
@@ -18,7 +50,7 @@ export default function BookkeepingPage() {
         <h2 className="text-2xl font-bold">Bookkeeping</h2>
         <Link 
           href="/admin/bookkeeping/new"
-          className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          className="px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 transition-colors"
         >
           Add Transaction
         </Link>
@@ -36,7 +68,7 @@ export default function BookkeepingPage() {
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Net Profit</p>
-          <p className="text-2xl font-bold text-emerald-600">GH₵ {netProfit.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gold-600">GH₵ {netProfit.toFixed(2)}</p>
         </div>
       </div>
 
@@ -54,7 +86,15 @@ export default function BookkeepingPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {transactions.map((t) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Loading transactions...</td>
+              </tr>
+            ) : transactions.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No transactions found. Add one!</td>
+              </tr>
+            ) : transactions.map((t) => (
               <tr key={t.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -68,11 +108,16 @@ export default function BookkeepingPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.description}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   <span className={t.type === 'income' ? 'text-green-600' : 'text-red-600'}>
-                    {t.type === 'income' ? '+' : '-'} GH₵ {t.amount.toFixed(2)}
+                    {t.type === 'income' ? '+' : '-'} GH₵ {typeof t.amount === 'number' ? t.amount.toFixed(2) : t.amount}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                  <button 
+                    onClick={() => handleDelete(t.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

@@ -1,10 +1,8 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/prisma"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  secret: "supersecretsecret",
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -13,10 +11,36 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials, req) {
-        if (credentials?.email === "admin@pburns.com" && credentials?.password === "password") {
-          return { id: "1", name: "Admin", email: "admin@pburns.com", role: "admin" }
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const apiKey = "AIzaSyA1wO6sb5ovqIUQTawbjSavmCj9cxKUkBc";
+        try {
+          const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+              returnSecureToken: true
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const data = await res.json();
+          
+          if (res.ok && data.localId) {
+            // Success! Return the user object
+            return { 
+              id: data.localId, 
+              email: data.email, 
+              name: data.displayName || "Admin", 
+              role: "admin" 
+            }
+          }
+        } catch (error) {
+          console.error("Firebase Auth Error:", error);
         }
-        return null
+        
+        return null;
       }
     })
   ],

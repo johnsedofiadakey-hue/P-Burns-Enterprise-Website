@@ -2,12 +2,16 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { db } from '@/lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 
 export default function NewInvoicePage() {
+  const [invoiceNumber, setInvoiceNumber] = useState(`INV-${Math.floor(1000 + Math.random() * 9000)}`)
   const [customer, setCustomer] = useState('')
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [status, setStatus] = useState('unpaid')
   const [items, setItems] = useState([{ description: '', quantity: 1, rate: 0 }])
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const addItem = () => {
@@ -29,9 +33,27 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ customer, date, status, items, total })
-    alert('Invoice created (mock)')
-    router.push('/admin/invoices')
+    setLoading(true)
+    
+    try {
+      await addDoc(collection(db, "invoices"), {
+        invoiceNumber,
+        customer,
+        date,
+        status,
+        items,
+        total,
+        createdAt: new Date().toISOString()
+      });
+      
+      alert('Invoice created successfully!')
+      router.push('/admin/invoices')
+    } catch (error: any) {
+      console.error("Error adding invoice:", error);
+      alert('Error creating invoice: ' + error.message);
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -40,7 +62,17 @@ export default function NewInvoicePage() {
 
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Invoice #</label>
+              <input 
+                type="text" 
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+                required 
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Customer Name</label>
               <input 
@@ -48,7 +80,7 @@ export default function NewInvoicePage() {
                 value={customer}
                 onChange={(e) => setCustomer(e.target.value)}
                 required 
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
               />
             </div>
             <div>
@@ -58,7 +90,7 @@ export default function NewInvoicePage() {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required 
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
               />
             </div>
           </div>
@@ -68,7 +100,7 @@ export default function NewInvoicePage() {
             <select 
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500"
             >
               <option value="unpaid">Unpaid</option>
               <option value="partial">Partial</option>
@@ -83,7 +115,7 @@ export default function NewInvoicePage() {
               <button 
                 type="button"
                 onClick={addItem}
-                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                className="text-sm text-gold-600 hover:text-gold-700 font-medium"
               >
                 + Add Item
               </button>
@@ -98,7 +130,7 @@ export default function NewInvoicePage() {
                       value={item.description}
                       onChange={(e) => updateItem(index, 'description', e.target.value)}
                       required 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
                     />
                   </div>
                   <div className="w-24">
@@ -109,7 +141,7 @@ export default function NewInvoicePage() {
                       onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
                       required 
                       min="1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
                     />
                   </div>
                   <div className="w-32">
@@ -120,7 +152,7 @@ export default function NewInvoicePage() {
                       onChange={(e) => updateItem(index, 'rate', parseFloat(e.target.value))}
                       required 
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-500" 
                     />
                   </div>
                   <div className="w-24 text-right text-sm font-medium text-gray-900">
@@ -141,7 +173,7 @@ export default function NewInvoicePage() {
 
           <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
             <span className="text-lg font-bold text-gray-900">Total</span>
-            <span className="text-xl font-bold text-emerald-600">GH₵ {total.toFixed(2)}</span>
+            <span className="text-xl font-bold text-gold-600">GH₵ {total.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-end space-x-4 mt-6">
@@ -154,9 +186,10 @@ export default function NewInvoicePage() {
             </button>
             <button 
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              disabled={loading}
+              className={`px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Save Invoice
+              {loading ? 'Saving...' : 'Save Invoice'}
             </button>
           </div>
         </form>

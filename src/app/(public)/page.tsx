@@ -1,220 +1,222 @@
-import Image from 'next/image'
-import Link from 'next/link'
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-16 pb-16">
-      {/* Hero Section */}
-      <section className="relative bg-gray-900 text-white">
+    <div className="flex flex-col w-full bg-[#FAFAFA]">
+      
+      {/* Premium Hero Section */}
+      <section className="relative bg-[#111111] text-white h-[85vh] min-h-[650px] flex items-center">
+        {/* Background Image with Deep Gradient Overlay */}
         <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#111111] via-[#111111]/90 to-[#1A1A1A]/40 z-10" />
           <Image
             src="/hero_showroom.png"
-            alt="Showroom"
+            alt="P-Burns Enterprise Showroom"
             fill
-            className="object-cover opacity-60"
+            className="object-cover opacity-50"
             priority
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-start justify-center min-h-[600px]">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
-            Premium Ceramics & Doors
-          </h1>
-          <p className="text-xl md:text-2xl text-emerald-100 max-w-2xl mb-8">
-            Quality products for your construction and home improvement projects. Sourced directly from top manufacturers.
-          </p>
-          <div className="flex gap-4">
-            <Link 
-              href="/shop" 
-              className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
-            >
-              Shop Now
-            </Link>
-            <Link 
-              href="/services" 
-              className="px-6 py-3 bg-white text-emerald-900 font-medium rounded-md hover:bg-gray-100 transition-colors"
-            >
-              Get a Quote
-            </Link>
-          </div>
-        </div>
-      </section>
-
-          {/* About Us */}
-          <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center -mt-16 bg-white p-8 rounded-lg shadow-sm border border-gray-100 relative z-10 mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About P-Burns Enterprise</h2>
-            <p className="text-gray-600">
-              We are a premier retail and service company in Ghana, specializing in high-quality ceramics, doors, and home items. 
-              We also provide professional windows installation services and handle bulk supply contracts for construction projects.
+        
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-gold-500/10 border border-gold-500/20 text-gold-400 text-xs font-bold uppercase tracking-widest mb-8">
+              <span className="w-2 h-2 rounded-full bg-gold-500 animate-pulse"></span>
+              Quality First
+            </div>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight text-white">
+              Elevate Your Space with <span className="text-gold-500">Premium Materials.</span>
+            </h1>
+            <p className="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light border-l-2 border-gold-500 pl-6">
+              High-grade ceramics, luxury doors, and enterprise construction supplies sourced directly from top global manufacturers.
             </p>
-          </section>
-
-          {/* Featured Categories */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Collections</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Ceramics */}
-          <div className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-            <div className="aspect-w-4 aspect-h-3 bg-gray-200 h-64 flex items-center justify-center">
-              <div className="text-gray-400">Ceramics Image</div>
-            </div>
-            <div className="p-6 bg-white">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Ceramics</h3>
-              <p className="text-gray-500 text-sm mb-4">High-quality floor and wall tiles.</p>
-              <Link href="/shop/ceramics" className="text-emerald-600 font-medium hover:text-emerald-700">Explore &rarr;</Link>
-            </div>
-          </div>
-
-          {/* Doors */}
-          <div className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-            <div className="aspect-w-4 aspect-h-3 bg-gray-200 h-64 flex items-center justify-center">
-              <div className="text-gray-400">Doors Image</div>
-            </div>
-            <div className="p-6 bg-white">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Doors</h3>
-              <p className="text-gray-500 text-sm mb-4">Security and wooden doors for all needs.</p>
-              <Link href="/shop/doors" className="text-emerald-600 font-medium hover:text-emerald-700">Explore &rarr;</Link>
-            </div>
-          </div>
-
-          {/* Home Items */}
-          <div className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-            <div className="aspect-w-4 aspect-h-3 bg-gray-200 h-64 flex items-center justify-center">
-              <div className="text-gray-400">Home Items Image</div>
-            </div>
-            <div className="p-6 bg-white">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Home Items</h3>
-              <p className="text-gray-500 text-sm mb-4">General items for your home and office.</p>
-              <Link href="/shop/home-items" className="text-emerald-600 font-medium hover:text-emerald-700">Explore &rarr;</Link>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link 
+                href="/shop" 
+                className="px-8 py-4 bg-gold-600 text-white font-bold rounded-full hover:bg-gold-500 shadow-lg shadow-gold-900/20 transition-all active:scale-95 text-center flex items-center justify-center gap-2 group"
+              >
+                Explore Collection
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+              </Link>
+              <Link 
+                href="/services" 
+                className="px-8 py-4 bg-transparent border border-gray-600 text-white font-bold rounded-full hover:bg-white/5 hover:border-gold-500 transition-all active:scale-95 text-center"
+              >
+                Request Enterprise Quote
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Services</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Windows Installation</h3>
-            <p className="text-gray-500 text-sm">Professional supply and installation of quality windows.</p>
+      {/* About Us (Elevated Gold Card Design) */}
+      <section className="relative z-30 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 mb-24">
+        <div className="bg-white rounded-3xl shadow-2xl shadow-charcoal-900/10 border-t-4 border-gold-500 p-10 md:p-16 text-center relative overflow-hidden">
+          {/* Subtle logo monogram watermark in background */}
+          <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
+            <span className="text-[200px] font-black text-charcoal-900 leading-none">PB</span>
           </div>
-          <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0V9a2 2 0 012-2h2a2 2 0 012 2v12"></path></svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">General Contracts</h3>
-            <p className="text-gray-500 text-sm">Bulk supply contracts for construction projects.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Pre-Orders</h3>
-            <p className="text-gray-500 text-sm">Order items directly from China shipments.</p>
+          
+          <div className="relative z-10">
+            <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Our Heritage</span>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-charcoal-950 mb-6">Built on Quality & Trust</h2>
+            <div className="w-16 h-1 bg-gold-500 mx-auto mb-8"></div>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
+              P-Burns Enterprise is Ghana's premier destination for high-quality building finishing materials. From luxury ceramics to robust security doors, we handle individual home improvements and large-scale bulk supply contracts with unmatched professional installation services.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Pre-Order Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="bg-emerald-600 text-white p-8 rounded-lg flex flex-col md:flex-row justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">China Import Pre-Orders</h2>
-            <p className="text-emerald-100">Secure your items from our upcoming shipments at better rates.</p>
-          </div>
-          <Link 
-            href="/pre-order" 
-            className="mt-4 md:mt-0 px-6 py-3 bg-white text-emerald-600 font-medium rounded-md hover:bg-emerald-50 transition-colors"
-          >
-            View Pre-Order Items
-          </Link>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="bg-emerald-50 py-16">
+      {/* Featured Categories */}
+      <section className="py-24 bg-[#111111] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Why Choose P-Burns?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="p-6">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold">1</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Quality Assurance</h3>
-              <p className="text-gray-600 text-sm">We source only the best materials from trusted manufacturers.</p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4">
+            <div>
+              <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Curation</span>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-2">Our Collections</h2>
+              <p className="text-gray-400 mt-2 text-lg">Meticulously sourced materials for visionary projects.</p>
             </div>
-            <div className="p-6">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold">2</span>
+            <Link href="/shop" className="flex items-center gap-2 text-gold-500 font-bold hover:text-gold-400 transition-colors uppercase text-sm tracking-wider group">
+              View All Categories 
+              <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            {/* Category Card 1 */}
+            <Link href="/shop/ceramics" className="group flex flex-col hover:-translate-y-2 transition-all duration-500 md:col-span-2">
+              <div className="relative h-[500px] w-full overflow-hidden rounded-2xl mb-6">
+                <Image
+                  src="/category_ceramics.png"
+                  alt="Premium Ceramics"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950/80 via-transparent to-transparent opacity-60"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Direct Sourcing</h3>
-              <p className="text-gray-600 text-sm">No middlemen. We bring the value directly to you.</p>
-            </div>
-            <div className="p-6">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold">3</span>
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-white mb-2">Premium Ceramics</h3>
+                <p className="text-gray-400 mb-4 leading-relaxed text-sm">High-durability floor and wall tiles crafted for modern aesthetics.</p>
+                <span className="text-gold-500 font-bold group-hover:text-gold-400 flex items-center gap-2 text-sm uppercase tracking-wider">
+                  Explore Range <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Expert Service</h3>
-              <p className="text-gray-600 text-sm">Years of experience in the construction supply industry.</p>
-            </div>
+            </Link>
+
+            {/* Category Card 2 */}
+            <Link href="/shop/doors" className="group flex flex-col hover:-translate-y-2 transition-all duration-500">
+              <div className="relative h-[500px] w-full overflow-hidden rounded-2xl mb-6">
+                <Image
+                  src="/category_doors.png"
+                  alt="Security & Doors"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950/80 via-transparent to-transparent opacity-60"></div>
+              </div>
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-white mb-2">Security & Doors</h3>
+                <p className="text-gray-400 mb-4 leading-relaxed text-sm">Uncompromising security meets elegant wooden and steel finishes.</p>
+                <span className="text-gold-500 font-bold group-hover:text-gold-400 flex items-center gap-2 text-sm uppercase tracking-wider">
+                  Explore Range <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </span>
+              </div>
+            </Link>
+
+            {/* Category Card 3 */}
+            <Link href="/shop/home-items" className="group flex flex-col hover:-translate-y-2 transition-all duration-500">
+              <div className="relative h-[500px] w-full overflow-hidden rounded-2xl mb-6">
+                <Image
+                  src="/category_home_items.png"
+                  alt="Home Accessories"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950/80 via-transparent to-transparent opacity-60"></div>
+              </div>
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-white mb-2">Home Accessories</h3>
+                <p className="text-gray-400 mb-4 leading-relaxed text-sm">Fixtures, basins, and finishing items to complete your projects.</p>
+                <span className="text-gold-500 font-bold group-hover:text-gold-400 flex items-center gap-2 text-sm uppercase tracking-wider">
+                  Explore Range <svg className="w-4 h-4 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                </span>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-            <div className="aspect-w-1 aspect-h-1 bg-gray-100 h-48 flex items-center justify-center mb-4">
-              <div className="text-gray-400">Product Image</div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900">Premium Ceramic Tile</h3>
-            <p className="text-emerald-600 font-bold mt-1">GH₵ 120.00</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-            <div className="aspect-w-1 aspect-h-1 bg-gray-100 h-48 flex items-center justify-center mb-4">
-              <div className="text-gray-400">Product Image</div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900">Luxury Security Door</h3>
-            <p className="text-emerald-600 font-bold mt-1">GH₵ 1,500.00</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-            <div className="aspect-w-1 aspect-h-1 bg-gray-100 h-48 flex items-center justify-center mb-4">
-              <div className="text-gray-400">Product Image</div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900">Elegant Hand Basin</h3>
-            <p className="text-emerald-600 font-bold mt-1">GH₵ 350.00</p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-            <div className="aspect-w-1 aspect-h-1 bg-gray-100 h-48 flex items-center justify-center mb-4">
-              <div className="text-gray-400">Product Image</div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900">Modern Door Lock</h3>
-            <p className="text-emerald-600 font-bold mt-1">GH₵ 85.00</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="bg-gray-50 py-16">
+      {/* Pre-Order Banner (Premium Dark/Gold Design) */}
+      <section className="py-24 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">What Our Customers Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <p className="text-gray-600 text-sm mb-4">"The quality of the ceramics I bought from P-Burns was exceptional. My house looks amazing."</p>
-              <p className="font-semibold text-gray-900">- Kwesi Mensah</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <p className="text-gray-600 text-sm mb-4">"Great customer service and fast delivery. I highly recommend them for any construction project."</p>
-              <p className="font-semibold text-gray-900">- Abena Osei</p>
+          <div className="relative overflow-hidden bg-[#111111] shadow-2xl rounded-3xl border border-[#1A1A1A]">
+            {/* Subtle Gold accent line */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600"></div>
+            
+            <div className="relative z-10 px-8 py-20 md:px-16 flex flex-col lg:flex-row items-center justify-between gap-10">
+              <div className="text-center lg:text-left">
+                <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Direct Sourcing</span>
+                <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4">China Import Pre-Orders</h2>
+                <p className="text-gray-400 text-lg max-w-2xl leading-relaxed">
+                  Bypass the markup. Secure your building materials directly from our upcoming international shipments and lock in enterprise wholesale rates.
+                </p>
+              </div>
+              <div className="flex-shrink-0 w-full lg:w-auto">
+                <Link 
+                  href="/pre-order" 
+                  className="w-full lg:w-auto inline-flex items-center justify-center px-10 py-5 bg-gold-600 text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/40"
+                >
+                  View Next Shipment
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Enterprise Services */}
+      <section className="py-24 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Solutions</span>
+            <h2 className="text-4xl font-serif font-bold text-[#111111] mb-6">Professional Services</h2>
+            <div className="w-16 h-1 bg-gold-500 mx-auto mb-8"></div>
+            <p className="text-xl text-[#555555]">Beyond retail, we provide end-to-end solutions for construction and home finishing projects.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Service 1 */}
+            <div className="text-center group">
+              <div className="w-24 h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-gold-50 transition-colors duration-300 border border-gray-100">
+                <svg className="w-10 h-10 text-[#111111] group-hover:text-gold-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#111111] mb-4 uppercase tracking-wide">Bulk Sourcing</h3>
+              <p className="text-[#555555] leading-relaxed text-sm">Dedicated supply lines for large-scale construction projects, ensuring timely delivery of high-volume materials.</p>
+            </div>
+
+            {/* Service 2 */}
+            <div className="text-center group">
+              <div className="w-24 h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-gold-50 transition-colors duration-300 border border-gray-100">
+                <svg className="w-10 h-10 text-[#111111] group-hover:text-gold-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0V9a2 2 0 012-2h2a2 2 0 012 2v12"></path></svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#111111] mb-4 uppercase tracking-wide">Expert Installation</h3>
+              <p className="text-[#555555] leading-relaxed text-sm">Professional fitting and installation of windows, doors, and complex architectural glass setups by trained experts.</p>
+            </div>
+
+            {/* Service 3 */}
+            <div className="text-center group">
+              <div className="w-24 h-24 bg-[#FAFAFA] rounded-full flex items-center justify-center mx-auto mb-8 group-hover:bg-gold-50 transition-colors duration-300 border border-gray-100">
+                <svg className="w-10 h-10 text-[#111111] group-hover:text-gold-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#111111] mb-4 uppercase tracking-wide">Quality Assurance</h3>
+              <p className="text-[#555555] leading-relaxed text-sm">Rigorous checks on all imported goods to ensure every tile and fitting meets top-tier structural standards.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-  )
+  );
 }

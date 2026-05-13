@@ -53,89 +53,92 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+    <div className="bg-[#FAFAFA] min-h-screen py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Secure Checkout</span>
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-12">Checkout</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Customer Details Form */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h2 className="text-lg font-semibold mb-4">Customer Details</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required 
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required 
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input 
-                  type="tel" 
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required 
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Delivery Address</label>
-                <textarea 
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required 
-                  rows={3}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" 
-                />
-              </div>
-              <button 
-                type="submit"
-                className="w-full py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
-              >
-                Pay with Paystack
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Order Summary */}
-        <div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 h-fit">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-            <div className="space-y-2 text-sm mb-4">
-              {mockCartItems.map((item) => (
-                <div key={item.id} className="flex justify-between text-gray-600">
-                  <span>{item.name} x {item.quantity}</span>
-                  <span>GH₵ {(item.price * item.quantity).toFixed(2)}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Customer Details Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100">
+              <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Customer Details</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                  />
                 </div>
-              ))}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Delivery Address</label>
+                  <textarea 
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required 
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="w-full py-4 bg-gold-600 text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20"
+                >
+                  Pay with Paystack
+                </button>
+              </form>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>GH₵ {subtotal.toFixed(2)}</span>
+          </div>
+
+          {/* Order Summary */}
+          <div>
+            <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 h-fit">
+              <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Order Summary</h2>
+              <div className="space-y-3 text-sm mb-6">
+                {mockCartItems.map((item) => (
+                  <div key={item.id} className="flex justify-between text-gray-600">
+                    <span>{item.name} <span className="text-gray-400">x {item.quantity}</span></span>
+                    <span className="font-bold text-[#111111]">GH₵ {(item.price * item.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Delivery Fee</span>
-                <span>GH₵ {deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-gray-100 my-2 pt-2 flex justify-between font-bold text-gray-900 text-base">
-                <span>Total</span>
-                <span>GH₵ {total.toFixed(2)}</span>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-bold text-[#111111]">GH₵ {subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Delivery Fee</span>
+                  <span className="font-bold text-[#111111]">GH₵ {deliveryFee.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-gray-100 my-4 pt-4 flex justify-between font-black text-[#111111] text-lg uppercase">
+                  <span>Total</span>
+                  <span className="text-gold-600">GH₵ {total.toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </div>

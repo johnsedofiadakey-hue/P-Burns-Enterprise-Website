@@ -1,3 +1,5 @@
+import ThemeSettings from '@/components/ThemeSettings'
+
 export default function AdminDashboard() {
   return (
     <div>
@@ -18,6 +20,9 @@ export default function AdminDashboard() {
           <p className="text-2xl font-bold text-gray-900 mt-2">0</p>
         </div>
       </div>
+
+      {/* Theme Settings */}
+      <ThemeSettings />
     </div>
   )
 }

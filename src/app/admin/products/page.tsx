@@ -1,20 +1,52 @@
-import Link from 'next/link'
+'use client'
 
-// Mock data
-const products = [
-  { id: '1', name: 'Ceramic Tile A', category: 'Ceramics', price: 120.00, stock: 50, status: 'active' },
-  { id: '2', name: 'Wooden Door B', category: 'Doors', price: 450.00, stock: 10, status: 'active' },
-  { id: '3', name: 'Home Item C', category: 'Home Items', price: 85.00, stock: 0, status: 'out_of_stock' },
-]
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { db } from '@/lib/firebase'
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const fetchedProducts = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      await deleteDoc(doc(db, "products", id));
+      setProducts(products.filter(p => p.id !== id));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert('Error deleting product');
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Products</h2>
         <Link 
           href="/admin/products/new"
-          className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+          className="px-4 py-2 bg-gold-600 text-white rounded-md hover:bg-gold-700 transition-colors"
         >
           Add Product
         </Link>
@@ -33,11 +65,19 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Loading products...</td>
+              </tr>
+            ) : products.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No products found. Add one or visit /api/seed to populate!</td>
+              </tr>
+            ) : products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GH₵ {product.price.toFixed(2)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.stock}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -47,8 +87,13 @@ export default function ProductsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link href={`/admin/products/${product.id}/edit`} className="text-emerald-600 hover:text-emerald-900 mr-4">Edit</Link>
-                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                  <Link href={`/admin/products/${product.id}/edit`} className="text-gold-600 hover:text-gold-900 mr-4">Edit</Link>
+                  <button 
+                    onClick={() => handleDelete(product.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
