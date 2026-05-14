@@ -75,7 +75,7 @@ export default function AnalyticsTracker() {
         timestamp: new Date().toISOString()
       });
       // Try to send via beacon if possible, otherwise we miss this data point
-      if (navigator.sendBeacon) {
+      if (typeof navigator.sendBeacon === 'function') {
         // We can't easily use sendBeacon with Firestore REST directly without auth, 
         // but we could set up an API route for it later.
         // For now we just skip unload tracking or do a quick fetch

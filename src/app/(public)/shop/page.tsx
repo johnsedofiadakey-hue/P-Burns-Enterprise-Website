@@ -22,6 +22,7 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
 
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsSnap, categoriesSnap] = await Promise.all([

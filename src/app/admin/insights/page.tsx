@@ -22,7 +22,7 @@ export default function MarketInsightsPage() {
           limit(500)
         )
         const snapshot = await getDocs(q)
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
         
         setInsights(data)
         
