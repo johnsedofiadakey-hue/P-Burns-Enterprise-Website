@@ -22,6 +22,10 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
+  const [loadingReviews, setLoadingReviews] = useState(true)
+  const [reviewForm, setReviewForm] = useState({ name: '', email: '', rating: 5, comment: '' })
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -47,6 +51,62 @@ export default function ProductDetailPage() {
       fetchProduct();
     }
   }, [id, router])
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const q = query(
+          collection(db, "reviews"),
+          where("productId", "==", id),
+          where("status", "==", "approved")
+        );
+        const querySnapshot = await getDocs(q);
+        const reviewsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setReviews(reviewsData);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    if (id) {
+      fetchReviews();
+    }
+  }, [id]);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingReview(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: id,
+          ...reviewForm
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Review submitted successfully!');
+        setReviewForm({ name: '', email: '', rating: 5, comment: '' });
+        // Refresh reviews
+        const q = query(collection(db, "reviews"), where("productId", "==", id), where("status", "==", "approved"));
+        const querySnapshot = await getDocs(q);
+        setReviews(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } else {
+        alert('Failed to submit review: ' + data.error);
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert('Error submitting review');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -184,6 +244,102 @@ export default function ProductDetailPage() {
                 >
                   Request a Quote
                 </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Reviews Section */}
+          <div className="mt-24 border-t border-gray-100 pt-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              {/* Reviews List */}
+              <div className="lg:col-span-2">
+                <h2 className="text-2xl font-black text-charcoal-950 uppercase tracking-tight mb-8">Customer Reviews ({reviews.length})</h2>
+                
+                {loadingReviews ? (
+                  <p className="text-gray-500">Loading reviews...</p>
+                ) : reviews.length === 0 ? (
+                  <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
+                ) : (
+                  <div className="space-y-6">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="bg-white p-6 rounded-lg border border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-charcoal-950">{review.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {review.createdAt ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() : 'Just now'}
+                            </div>
+                          </div>
+                          <div className="flex text-gold-500">
+                            {[...Array(5)].map((_, i) => (
+                              <svg key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-gray-300'}`} viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm">{review.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Add Review Form */}
+              <div>
+                <h2 className="text-2xl font-black text-charcoal-950 uppercase tracking-tight mb-8">Leave a Review</h2>
+                <form onSubmit={handleReviewSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-gray-100">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Name *</label>
+                    <input 
+                      type="text" 
+                      value={reviewForm.name}
+                      onChange={(e) => setReviewForm({ ...reviewForm, name: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Email</label>
+                    <input 
+                      type="email" 
+                      value={reviewForm.email}
+                      onChange={(e) => setReviewForm({ ...reviewForm, email: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Rating *</label>
+                    <select 
+                      value={reviewForm.rating}
+                      onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 text-sm"
+                    >
+                      <option value="5">5 Stars</option>
+                      <option value="4">4 Stars</option>
+                      <option value="3">3 Stars</option>
+                      <option value="2">2 Stars</option>
+                      <option value="1">1 Star</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Comment *</label>
+                    <textarea 
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                      required
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 text-sm"
+                    ></textarea>
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={submittingReview}
+                    className={`w-full py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs hover:bg-gold-600 transition-colors ${submittingReview ? 'opacity-50' : ''}`}
+                  >
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </form>
               </div>
             </div>
           </div>
