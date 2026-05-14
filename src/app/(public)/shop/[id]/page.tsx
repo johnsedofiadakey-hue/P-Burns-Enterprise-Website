@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 // Mock data
 const mockProducts = [
@@ -20,11 +22,29 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    const foundProduct = mockProducts.find(p => p.id === id)
-    if (foundProduct) {
-      setProduct(foundProduct)
+    const fetchProduct = async () => {
+      try {
+        const docRef = doc(db, "products", id as string);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProduct({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          // Try mock data as fallback
+          const foundProduct = mockProducts.find(p => p.id === id);
+          if (foundProduct) {
+            setProduct(foundProduct);
+          } else {
+            router.push('/shop');
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    };
+    if (id) {
+      fetchProduct();
     }
-  }, [id])
+  }, [id, router])
 
   if (!product) {
     return <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-500">Loading...</div>
