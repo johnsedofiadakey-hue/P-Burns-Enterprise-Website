@@ -46,3 +46,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Fix for invisible text in inputs due to dark mode inheritance */
+input, textarea, select {
+  color: #111111 !important;
+}
