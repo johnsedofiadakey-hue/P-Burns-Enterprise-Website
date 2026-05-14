@@ -15,6 +15,7 @@ export default function UsersPage() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('staff')
   const [saving, setSaving] = useState(false)
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -67,6 +68,7 @@ export default function UsersPage() {
         name,
         email,
         role,
+        permissions: selectedPermissions,
         createdAt: new Date().toISOString()
       };
       
@@ -78,6 +80,7 @@ export default function UsersPage() {
       setName('');
       setEmail('');
       setRole('staff');
+      setSelectedPermissions([]);
       
       // Refresh list
       fetchUsers();
@@ -225,6 +228,29 @@ export default function UsersPage() {
                   <option value="inventory_manager">Inventory Manager</option>
                   <option value="admin">Admin</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Feature Access</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Dashboard', 'Products', 'Orders', 'Invoices', 'Customers', 'Reports', 'Settings'].map(feature => (
+                    <label key={feature} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input 
+                        type="checkbox"
+                        checked={selectedPermissions.includes(feature.toLowerCase())}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPermissions([...selectedPermissions, feature.toLowerCase()])
+                          } else {
+                            setSelectedPermissions(selectedPermissions.filter(p => p !== feature.toLowerCase()))
+                          }
+                        }}
+                        className="rounded border-gray-300 text-gold-600 focus:ring-gold-500"
+                      />
+                      {feature}
+                    </label>
+                  ))}
+                </div>
               </div>
             </form>
             
