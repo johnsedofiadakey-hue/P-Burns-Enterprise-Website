@@ -6,6 +6,7 @@ import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore'
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   
@@ -16,6 +17,7 @@ export default function SuppliersPage() {
   const [phone, setPhone] = useState('')
   const [country, setCountry] = useState('China')
   const [type, setType] = useState('Ceramics')
+  const [suppliedProducts, setSuppliedProducts] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   
   // Toast State
@@ -39,8 +41,19 @@ export default function SuppliersPage() {
     }
   }
 
+  const fetchProducts = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
   useEffect(() => {
     fetchSuppliers();
+    fetchProducts();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +68,7 @@ export default function SuppliersPage() {
         phone,
         country,
         type,
+        suppliedProducts,
         createdAt: new Date().toISOString()
       });
       
@@ -124,6 +138,7 @@ export default function SuppliersPage() {
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Name</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Contact</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Country</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Products</th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-widest">Type</th>
                 <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-widest">Actions</th>
               </tr>
@@ -139,6 +154,9 @@ export default function SuppliersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{supplier.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{supplier.contact}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{supplier.country}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 truncate max-w-xs" title={supplier.suppliedProducts?.join(', ')}>
+                      {supplier.suppliedProducts?.join(', ') || 'N/A'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 text-xs font-bold uppercase tracking-wider rounded ${
                         supplier.type === 'Ceramics' ? 'bg-amber-100 text-amber-800' :
@@ -219,6 +237,30 @@ export default function SuppliersPage() {
                 onChange={(e) => setPhone(e.target.value)} 
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Products Supplied</label>
+              <select 
+                multiple
+                value={suppliedProducts}
+                onChange={(e) => {
+                  const options = e.target.options;
+                  const value: string[] = [];
+                  for (let i = 0, l = options.length; i < l; i++) {
+                    if (options[i].selected) {
+                      value.push(options[i].value);
+                    }
+                  }
+                  setSuppliedProducts(value);
+                }}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all h-32 text-sm"
+              >
+                {products.map(p => (
+                  <option key={p.id} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple products.</p>
             </div>
 
             <div>

@@ -33,7 +33,22 @@ export default function CustomersPage() {
         id: doc.id,
         ...doc.data()
       }));
-      setCustomers(fetchedCustomers);
+
+      const ordersSnapshot = await getDocs(collection(db, "orders"));
+      const orders = ordersSnapshot.docs.map(doc => doc.data());
+
+      const enrichedCustomers = fetchedCustomers.map(customer => {
+        const customerOrders = orders.filter(order => order.customerId === customer.id || order.customer === customer.name);
+        const totalOrders = customerOrders.length;
+        const totalSpent = customerOrders.reduce((acc, order) => acc + (typeof order.total === 'number' ? order.total : parseFloat(order.total || 0)), 0);
+        return {
+          ...customer,
+          totalOrders,
+          totalSpent
+        };
+      });
+
+      setCustomers(enrichedCustomers);
     } catch (error) {
       console.error("Error fetching customers:", error);
       showToast("Error fetching customers", "error");
@@ -130,6 +145,8 @@ export default function CustomersPage() {
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Name</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Email</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Phone</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Orders</th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Spent</th>
               <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Type</th>
               <th className="px-6 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Actions</th>
             </tr>
@@ -137,17 +154,19 @@ export default function CustomersPage() {
           <tbody className="bg-white divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-400 font-medium">Loading customers...</td>
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-400 font-medium">Loading customers...</td>
               </tr>
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-400 font-medium">No customers found. Add one!</td>
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-400 font-medium">No customers found. Add one!</td>
               </tr>
             ) : customers.map((customer) => (
               <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{customer.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.phone}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.totalOrders || 0}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">GH₵ {(customer.totalSpent || 0).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full capitalize ${
                     customer.type === 'Retail' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'

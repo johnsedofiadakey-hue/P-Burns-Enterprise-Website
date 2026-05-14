@@ -16,6 +16,8 @@ export default function BookkeepingPage() {
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [saving, setSaving] = useState(false)
+  const [filterType, setFilterType] = useState('all')
+  const [filterMonth, setFilterMonth] = useState('all')
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -104,6 +106,12 @@ export default function BookkeepingPage() {
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount)), 0)
   const netProfit = totalIncome - totalExpense
 
+  const filteredTransactions = transactions.filter(t => {
+    const matchType = filterType === 'all' || t.type === filterType;
+    const matchMonth = filterMonth === 'all' || (t.date && t.date.startsWith(filterMonth));
+    return matchType && matchMonth;
+  });
+
   return (
     <div className="relative">
       {/* Animated Toast */}
@@ -158,10 +166,55 @@ export default function BookkeepingPage() {
         </div>
       </div>
 
+      {/* Income vs Expense Chart (Pure CSS) */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <h3 className="text-lg font-serif font-bold text-[#111111] mb-4">Income vs Expenses</h3>
+        <div className="flex items-end gap-6 h-64 border-b border-l border-gray-100 p-4">
+          {/* Income Bar */}
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <div 
+              className="w-16 bg-green-500 rounded-t-lg transition-all duration-500" 
+              style={{ height: `${totalIncome > 0 ? (totalIncome / (totalIncome + totalExpense)) * 100 : 0}%` }}
+            ></div>
+            <span className="text-xs font-bold text-gray-600">Income</span>
+            <span className="text-xs text-gray-500">GH₵ {totalIncome.toFixed(2)}</span>
+          </div>
+          {/* Expense Bar */}
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <div 
+              className="w-16 bg-red-500 rounded-t-lg transition-all duration-500" 
+              style={{ height: `${totalExpense > 0 ? (totalExpense / (totalIncome + totalExpense)) * 100 : 0}%` }}
+            ></div>
+            <span className="text-xs font-bold text-gray-600">Expenses</span>
+            <span className="text-xs text-gray-500">GH₵ {totalExpense.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Transactions Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto border border-gray-100">
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
+        <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Recent Transactions</span>
+          <div className="flex gap-2">
+            <select 
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="text-xs border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gold-500"
+            >
+              <option value="all">All Time</option>
+              <option value={new Date().toISOString().slice(0, 7)}>This Month</option>
+              <option value={new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().slice(0, 7)}>Last Month</option>
+            </select>
+            <select 
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="text-xs border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gold-500"
+            >
+              <option value="all">All Types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
         </div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -179,11 +232,11 @@ export default function BookkeepingPage() {
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">Loading transactions...</td>
               </tr>
-            ) : transactions.length === 0 ? (
+            ) : filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">No transactions found. Add one!</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">No transactions found matching filters.</td>
               </tr>
-            ) : transactions.map((t) => (
+            ) : filteredTransactions.map((t) => (
               <tr key={t.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{t.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap">

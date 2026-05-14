@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   })
   const [loading, setLoading] = useState(true)
   const [lowStockProducts, setLowStockProducts] = useState<any[]>([])
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -30,6 +31,8 @@ export default function AdminDashboard() {
         const lowStock = products.filter(p => (typeof p.stock === 'number' ? p.stock : parseInt(p.stock || 0)) < 10);
         setLowStockProducts(lowStock);
 
+        setRecentOrders(orders.slice(0, 5));
+
         setStats({
           totalSales,
           activeContracts,
@@ -47,9 +50,19 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-serif font-bold text-[#111111]">Dashboard</h2>
-        <p className="text-sm text-gray-700">Welcome to the P-Burns Enterprise Admin Portal</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-serif font-bold text-[#111111]">Dashboard</h2>
+          <p className="text-sm text-gray-700">Welcome to the P-Burns Enterprise Admin Portal</p>
+        </div>
+        <div className="flex gap-3">
+          <Link href="/admin/products" className="px-4 py-2 bg-[#111111] text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-gold-600 transition-colors">
+            + Add Product
+          </Link>
+          <Link href="/admin/invoices" className="px-4 py-2 bg-white border border-gray-200 text-[#111111] text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-gray-50 transition-colors">
+            New Invoice
+          </Link>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -75,6 +88,69 @@ export default function AdminDashboard() {
             {loading ? '...' : stats.pendingOrders}
           </p>
           <div className="mt-2 text-xs text-gray-700">Awaiting processing</div>
+        </div>
+      </div>
+
+      {/* Grid for Charts and Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Recent Orders */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-serif font-bold text-[#111111]">Recent Orders</h3>
+            <Link href="/admin/orders" className="text-xs font-bold text-gold-600 hover:text-gold-700 uppercase">View All</Link>
+          </div>
+          {loading ? (
+            <div className="text-sm text-gray-700">Loading orders...</div>
+          ) : recentOrders.length === 0 ? (
+            <div className="text-sm text-gray-500">No orders found.</div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {recentOrders.map((order: any) => (
+                <div key={order.id} className="py-3 flex justify-between items-center">
+                  <div>
+                    <div className="text-sm font-bold text-[#111111]">{order.customerName || order.customer}</div>
+                    <div className="text-xs text-gray-500">{order.date || order.createdAt?.split('T')[0]}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-[#111111]">GH₵ {parseFloat(order.total).toFixed(2)}</div>
+                    <div className={`text-xs font-bold capitalize ${
+                      order.status === 'completed' ? 'text-green-600' : 
+                      order.status === 'pending' ? 'text-yellow-600' : 
+                      'text-blue-600'
+                    }`}>{order.status}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Top Selling Products */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-serif font-bold text-[#111111] mb-4">Top Selling Products</h3>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-1/3 text-sm text-gray-700 truncate">Premium Ceramics</div>
+              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
+                <div className="bg-gold-500 h-full" style={{ width: '80%' }}></div>
+              </div>
+              <div className="text-sm font-bold text-[#111111]">80%</div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-1/3 text-sm text-gray-700 truncate">Luxury Doors</div>
+              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
+                <div className="bg-gold-500 h-full" style={{ width: '65%' }}></div>
+              </div>
+              <div className="text-sm font-bold text-[#111111]">65%</div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-1/3 text-sm text-gray-700 truncate">Home Items</div>
+              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
+                <div className="bg-gold-500 h-full" style={{ width: '45%' }}></div>
+              </div>
+              <div className="text-sm font-bold text-[#111111]">45%</div>
+            </div>
+          </div>
         </div>
       </div>
 

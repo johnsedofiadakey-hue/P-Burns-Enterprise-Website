@@ -1,19 +1,77 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-// Mock data
-const mockPreOrders = [
-  { id: '1', customer: 'John Doe', item: 'Premium Ceramic Tiles (Wood Finish)', supplier: 'China Supplier Ltd', arrivalDate: '2026-06-15', status: 'ordered', total: 1200.00 },
-  { id: '2', customer: 'Jane Smith', item: 'Custom: Modern Chandelier', supplier: 'Turkey Doors Inc', arrivalDate: '2026-05-20', status: 'in_transit', total: 3450.00 },
-]
+import { db } from '@/lib/firebase'
+import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore'
 
 export default function PreOrdersPage() {
-  const [preOrders, setPreOrders] = useState(mockPreOrders)
+  const [preOrders, setPreOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   
   // Modal State
   const [showModal, setShowModal] = useState(false)
+  
+  // Form State
+  const [customer, setCustomer] = useState('')
+  const [item, setItem] = useState('')
+  const [arrivalDate, setArrivalDate] = useState('')
+  const [total, setTotal] = useState('')
+  const [status, setStatus] = useState('ordered')
+  const [submitting, setSubmitting] = useState(false)
+
+  const fetchPreOrders = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "pre_orders"));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPreOrders(data);
+    } catch (error) {
+      console.error("Error fetching pre-orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPreOrders();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await addDoc(collection(db, "pre_orders"), {
+        customer,
+        item,
+        arrivalDate,
+        total: parseFloat(total),
+        status,
+        createdAt: new Date().toISOString()
+      });
+      setShowModal(false);
+      setCustomer('');
+      setItem('');
+      setArrivalDate('');
+      setTotal('');
+      setStatus('ordered');
+      fetchPreOrders();
+    } catch (error) {
+      console.error("Error adding pre-order:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this pre-order?')) return;
+    try {
+      await deleteDoc(doc(db, "pre_orders", id));
+      fetchPreOrders();
+    } catch (error) {
+      console.error("Error deleting pre-order:", error);
+    }
+  };
   
   return (
     <div className="relative">
@@ -45,7 +103,15 @@ export default function PreOrdersPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-50">
-            {preOrders.map((order) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">Loading pre-orders...</td>
+              </tr>
+            ) : preOrders.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-medium">No pre-orders found.</td>
+              </tr>
+            ) : preOrders.map((order) => (
               <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{order.customer}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.item}</td>
@@ -59,10 +125,14 @@ export default function PreOrdersPage() {
                     {order.status.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gold-600">GH₵ {order.total.toFixed(2)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gold-600">GH₵ {typeof order.total === 'number' ? order.total.toFixed(2) : parseFloat(order.total || 0).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right flex justify-end gap-4">
-                  <Link href={`/admin/pre-orders/${order.id}/edit`} className="text-gold-600 hover:text-gold-700 transition-colors">Edit</Link>
-                  <button className="text-red-600 hover:text-red-700 transition-colors">Delete</button>
+                  <button 
+                    onClick={() => handleDelete(order.id)}
+                    className="text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -82,13 +152,68 @@ export default function PreOrdersPage() {
               </div>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-[#111111] text-2xl">✕</button>
             </div>
-            <div className="p-6 flex-1 flex items-center justify-center text-gray-600 font-medium">
-              Form will be connected to Firestore in the next step.
-            </div>
-            <div className="p-6 border-t border-gray-100 flex gap-4">
-              <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-800 font-bold text-sm hover:bg-gray-50">Cancel</button>
-              <button disabled className="flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg opacity-50 cursor-not-allowed">Save</button>
-            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 flex-1 space-y-4 overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Customer Name</label>
+                <input 
+                  type="text" 
+                  value={customer}
+                  onChange={(e) => setCustomer(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Item Requested</label>
+                <input 
+                  type="text" 
+                  value={item}
+                  onChange={(e) => setItem(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Est. Arrival Date</label>
+                <input 
+                  type="date" 
+                  value={arrivalDate}
+                  onChange={(e) => setArrivalDate(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Total Amount (GH₵)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={total}
+                  onChange={(e) => setTotal(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
+                <select 
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                >
+                  <option value="ordered">Ordered</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="arrived">Arrived</option>
+                </select>
+              </div>
+              <div className="pt-4 flex gap-4">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-800 font-bold text-sm hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={submitting} className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  {submitting ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

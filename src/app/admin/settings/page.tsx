@@ -66,8 +66,11 @@ export default function SettingsPage() {
   
   // Projects
   const [p1Title, setP1Title] = useState('Luxury Hotel Accra')
-  const [p1Desc, setP1Desc] = useState('Premium ceramic tiling for the entire lobby and suites.')
-  const [p1Image, setP1Image] = useState('/category_ceramics.png')
+  const [p1Desc, setP1Desc] = useState('Complete floor and wall tiling for a 50-room luxury hotel.')
+  const [p1Image, setP1Image] = useState('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3')
+  const [p1File, setP1File] = useState<File | null>(null)
+  const [p2File, setP2File] = useState<File | null>(null)
+  const [p3File, setP3File] = useState<File | null>(null)
   
   const [p2Title, setP2Title] = useState('Private Mansion Kumasi')
   const [p2Desc, setP2Desc] = useState('Custom imported security doors and window fixtures.')
@@ -237,11 +240,31 @@ export default function SettingsPage() {
         updatedAt: new Date().toISOString()
       });
 
+      let p1Url = p1Image;
+      let p2Url = p2Image;
+      let p3Url = p3Image;
+
+      if (p1File) {
+        const storageRef = ref(storage, `projects/p1_${Date.now()}`);
+        const snapshot = await uploadBytes(storageRef, p1File);
+        p1Url = await getDownloadURL(snapshot.ref);
+      }
+      if (p2File) {
+        const storageRef = ref(storage, `projects/p2_${Date.now()}`);
+        const snapshot = await uploadBytes(storageRef, p2File);
+        p2Url = await getDownloadURL(snapshot.ref);
+      }
+      if (p3File) {
+        const storageRef = ref(storage, `projects/p3_${Date.now()}`);
+        const snapshot = await uploadBytes(storageRef, p3File);
+        p3Url = await getDownloadURL(snapshot.ref);
+      }
+
       // Save projects settings
       await setDoc(doc(db, "settings", "projects"), {
-        p1Title, p1Desc, p1Image,
-        p2Title, p2Desc, p2Image,
-        p3Title, p3Desc, p3Image,
+        p1Title, p1Desc, p1Image: p1Url,
+        p2Title, p2Desc, p2Image: p2Url,
+        p3Title, p3Desc, p3Image: p3Url,
         updatedAt: new Date().toISOString()
       });
       
@@ -835,13 +858,16 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image</label>
                       <input 
-                        type="text" 
-                        value={p1Image} 
-                        onChange={(e) => setP1Image(e.target.value)} 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => setP1File(e.target.files?.[0] || null)} 
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                       />
+                      {p1Image && (
+                        <div className="mt-2 text-xs text-gray-500 truncate">Current: {p1Image}</div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -868,13 +894,16 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image</label>
                       <input 
-                        type="text" 
-                        value={p2Image} 
-                        onChange={(e) => setP2Image(e.target.value)} 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => setP2File(e.target.files?.[0] || null)} 
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                       />
+                      {p2Image && (
+                        <div className="mt-2 text-xs text-gray-500 truncate">Current: {p2Image}</div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -901,13 +930,16 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image URL</label>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Image</label>
                       <input 
-                        type="text" 
-                        value={p3Image} 
-                        onChange={(e) => setP3Image(e.target.value)} 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => setP3File(e.target.files?.[0] || null)} 
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                       />
+                      {p3Image && (
+                        <div className="mt-2 text-xs text-gray-500 truncate">Current: {p3Image}</div>
+                      )}
                     </div>
                   </div>
                 </div>

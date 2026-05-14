@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore'
+import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore'
 
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([])
@@ -14,6 +14,8 @@ export default function ServicesPage() {
   const [description, setDescription] = useState('')
   const [rate, setRate] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [editingService, setEditingService] = useState<any>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -90,6 +92,42 @@ export default function ServicesPage() {
     }
   }
 
+  const handleEdit = (service: any) => {
+    setEditingService(service);
+    setName(service.name);
+    setDescription(service.description);
+    setRate(service.rate.toString());
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    
+    try {
+      const docRef = doc(db, "services", editingService.id);
+      await updateDoc(docRef, {
+        name,
+        description,
+        rate: parseFloat(rate),
+        updatedAt: new Date().toISOString()
+      });
+      
+      showToast('Service updated successfully!');
+      setShowEditModal(false);
+      setEditingService(null);
+      setName('');
+      setDescription('');
+      setRate('');
+      fetchServices();
+    } catch (error) {
+      console.error("Error updating service:", error);
+      showToast('Error updating service', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     
@@ -162,6 +200,12 @@ export default function ServicesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">GH₵ {typeof service.rate === 'number' ? service.rate.toFixed(2) : parseFloat(service.rate || 0).toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <button 
+                        onClick={() => handleEdit(service)}
+                        className="text-gold-600 hover:text-gold-700 font-bold uppercase text-xs tracking-wider mr-4"
+                      >
+                        Edit
+                      </button>
+                      <button 
                         onClick={() => handleDelete(service.id)}
                         className="text-red-500 hover:text-red-700 font-bold uppercase text-xs tracking-wider"
                       >
@@ -230,6 +274,70 @@ export default function ServicesPage() {
                 className={`w-full py-4 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${submitting ? 'opacity-50' : ''}`}
               >
                 {submitting ? 'Saving...' : 'Save Service'}
+              </button>
+            </div>
+          </form>
+        </div>
+      {/* Slide-in Modal for Edit Service */}
+      <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300 ${showEditModal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`absolute top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${showEditModal ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 className="text-lg font-serif font-bold text-[#111111]">Edit Service</h3>
+            <button 
+              onClick={() => {
+                setShowEditModal(false);
+                setEditingService(null);
+                setName('');
+                setDescription('');
+                setRate('');
+              }}
+              className="text-gray-400 hover:text-[#111111] transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <form onSubmit={handleUpdate} className="p-6 space-y-5 h-[calc(100%-73px)] overflow-y-auto">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Service Name</label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+                required 
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Description</label>
+              <textarea 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Rate (GH₵)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                value={rate} 
+                onChange={(e) => setRate(e.target.value)} 
+                required 
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+              />
+            </div>
+
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                disabled={submitting}
+                className={`w-full py-4 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 ${submitting ? 'opacity-50' : ''}`}
+              >
+                {submitting ? 'Updating...' : 'Update Service'}
               </button>
             </div>
           </form>

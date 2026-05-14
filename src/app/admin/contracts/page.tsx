@@ -1,14 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { db, storage } from '@/lib/firebase'
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 
 export default function ContractsPage() {
   const [contracts, setContracts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  
+  // Edit State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingContract, setEditingContract] = useState<any>(null)
   
   // Form State
   const [customer, setCustomer] = useState('')
@@ -17,6 +22,7 @@ export default function ContractsPage() {
   const [status, setStatus] = useState('pending')
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [saving, setSaving] = useState(false)
+  const [contractFile, setContractFile] = useState<File | null>(null)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -65,12 +71,20 @@ export default function ContractsPage() {
     setSaving(true);
     
     try {
+      let documentUrl = '';
+      if (contractFile) {
+        const storageRef = ref(storage, `contracts/${Date.now()}_${contractFile.name}`);
+        const snapshot = await uploadBytes(storageRef, contractFile);
+        documentUrl = await getDownloadURL(snapshot.ref);
+      }
+
       const docData = {
         customer,
         serviceType,
         value: parseFloat(value),
         status,
         startDate,
+        documentUrl,
         createdAt: new Date().toISOString()
       };
       
@@ -164,7 +178,15 @@ export default function ContractsPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{contract.startDate}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                  <Link href={`/admin/contracts/${contract.id}/edit`} className="text-gold-600 hover:text-gold-900 font-bold mr-4">Edit</Link>
+                  <button 
+                    onClick={() => {
+                      setEditingContract(contract);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="text-gold-600 hover:text-gold-900 font-bold mr-4"
+                  >
+                    Edit
+                  </button>
                   <button 
                     onClick={() => handleDelete(contract.id)}
                     className="text-red-600 hover:text-red-900 font-bold"
@@ -239,6 +261,16 @@ export default function ContractsPage() {
               </div>
 
               <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Contract Document (PDF/Image)</label>
+                <input 
+                  type="file" 
+                  accept=".pdf,image/*"
+                  onChange={(e) => setContractFile(e.target.files?.[0] || null)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
                 <select 
                   value={status}
@@ -278,6 +310,102 @@ export default function ContractsPage() {
                 className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {saving ? 'Adding...' : 'Add Contract'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Contract Modal (Slide-in from right) */}
+      {isEditModalOpen && editingContract && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+          <div className="absolute inset-0" onClick={() => setIsEditModalOpen(false)}></div>
+          
+          <div className="bg-white w-full max-w-md h-screen shadow-2xl relative z-10 flex flex-col transform transition-transform duration-300 ease-out translate-x-0">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-serif font-bold text-[#111111]">Edit Contract</h3>
+                <p className="text-xs text-gray-500 mt-1">Update contract details</p>
+              </div>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-[#111111] transition-colors text-2xl">✕</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Customer Name</label>
+                <input 
+                  type="text" 
+                  value={editingContract.customer}
+                  onChange={(e) => setEditingContract({...editingContract, customer: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Service Type</label>
+                <input 
+                  type="text" 
+                  value={editingContract.serviceType}
+                  onChange={(e) => setEditingContract({...editingContract, serviceType: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Contract Value (GH₵)</label>
+                <input 
+                  type="number" 
+                  value={editingContract.value}
+                  onChange={(e) => setEditingContract({...editingContract, value: parseFloat(e.target.value)})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
+                <select 
+                  value={editingContract.status}
+                  onChange={(e) => setEditingContract({...editingContract, status: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="deposit_paid">Deposit Paid</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex gap-4">
+              <button 
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    await updateDoc(doc(db, "contracts", editingContract.id), {
+                      customer: editingContract.customer,
+                      serviceType: editingContract.serviceType,
+                      status: editingContract.status,
+                      value: editingContract.value,
+                      updatedAt: new Date().toISOString()
+                    });
+                    showToast('Contract updated successfully!');
+                    setIsEditModalOpen(false);
+                    fetchContracts();
+                  } catch (error) {
+                    console.error("Error updating contract:", error);
+                    showToast('Error updating contract', 'error');
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={saving}
+                className={`flex-1 px-4 py-3 bg-[#111111] text-white font-bold text-sm rounded-lg hover:bg-gold-600 transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
