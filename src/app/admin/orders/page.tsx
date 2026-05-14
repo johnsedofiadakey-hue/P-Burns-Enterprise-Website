@@ -195,16 +195,31 @@ export default function OrdersPage() {
                 </div>
               </div>
 
-              {/* Status */}
-              <div>
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Status</h4>
-                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full capitalize ${
-                  selectedOrder.status === 'delivered' ? 'bg-green-50 text-green-700' : 
-                  selectedOrder.status === 'processing' ? 'bg-blue-50 text-blue-700' : 
-                  'bg-yellow-50 text-yellow-700'
-                }`}>
-                  {selectedOrder.status}
-                </span>
+              {/* Status Update Form */}
+              <div className="border-t border-gray-100 pt-4">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Update Status</h4>
+                <select 
+                  value={selectedOrder.status || 'pending'}
+                  onChange={async (e) => {
+                    const newStatus = e.target.value;
+                    try {
+                      const { updateDoc } = await import('firebase/firestore');
+                      await updateDoc(doc(db, "orders", selectedOrder.id), { status: newStatus });
+                      setSelectedOrder({...selectedOrder, status: newStatus});
+                      fetchOrders();
+                      showToast("Order status updated!");
+                    } catch (error) {
+                      showToast("Failed to update status", "error");
+                    }
+                  }}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
               </div>
             </div>
             

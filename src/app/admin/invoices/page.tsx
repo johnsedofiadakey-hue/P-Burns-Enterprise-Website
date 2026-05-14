@@ -385,6 +385,23 @@ export default function InvoicesPage() {
                     Edit
                   </button>
                   <button 
+                    onClick={async () => {
+                      if (!confirm('Are you sure you want to delete this invoice?')) return;
+                      try {
+                        const { deleteDoc, doc } = await import('firebase/firestore');
+                        await deleteDoc(doc(db, "invoices", selectedInvoice.id));
+                        setSelectedInvoice(null);
+                        fetchInvoices();
+                        showToast("Invoice deleted successfully!");
+                      } catch (e: any) {
+                        showToast("Error deleting invoice", "error");
+                      }
+                    }}
+                    className="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-bold hover:bg-red-50 transition-colors"
+                  >
+                    Delete
+                  </button>
+                  <button 
                     onClick={() => handleSharePDF('whatsapp')}
                     className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                   >

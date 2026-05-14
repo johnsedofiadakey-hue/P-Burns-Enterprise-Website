@@ -61,42 +61,27 @@ export default function ProductsPage() {
     fetchCategories();
   }, []);
 
-  const handleSeed = async () => {
-    if (!confirm('Are you sure you want to seed initial products? This will add duplicate items if already seeded.')) return;
-    setLoading(true);
-    try {
-      const initialProducts = [
-        { name: 'Ceramic Tile A', category: 'ceramics', price: 120.00, image: '/placeholder.png', description: 'High-quality ceramic tile.', stock: 100, status: 'In Stock', createdAt: new Date().toISOString() },
-        { name: 'Wooden Door B', category: 'doors', price: 450.00, image: '/placeholder.png', description: 'Robust wooden door.', stock: 50, status: 'In Stock', createdAt: new Date().toISOString() },
-        { name: 'Home Item C', category: 'home_items', price: 85.00, image: '/placeholder.png', description: 'Essential home item.', stock: 200, status: 'In Stock', createdAt: new Date().toISOString() },
-        { name: 'Ceramic Tile B', category: 'ceramics', price: 150.00, image: '/placeholder.png', description: 'Premium ceramic tile.', stock: 80, status: 'In Stock', createdAt: new Date().toISOString() },
-        { name: 'Steel Door', category: 'doors', price: 600.00, image: '/placeholder.png', description: 'Heavy security steel door.', stock: 30, status: 'In Stock', createdAt: new Date().toISOString() },
-      ]
-      
-      for (const prod of initialProducts) {
-        await addDoc(collection(db, "products"), prod);
-      }
-      
-      showToast("Seeded initial products successfully!");
-      fetchProducts();
-    } catch (error) {
-      console.error("Error seeding products:", error);
-      showToast("Error seeding products", "error")
-    } finally {
-      setLoading(false);
-    }
-  }
+
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!id) {
+      showToast("Cannot delete: Invalid product ID", "error");
+      return;
+    }
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
     
     try {
-      await deleteDoc(doc(db, "products", id));
+      // Optimistically remove from UI
+      const previousProducts = [...products];
       setProducts(products.filter(p => p.id !== id));
+      
+      await deleteDoc(doc(db, "products", id));
       showToast("Product deleted successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting product:", error);
-      showToast("Error deleting product", "error");
+      showToast(`Error deleting product: ${error.message}`, "error");
+      // Re-fetch to restore state if it failed
+      fetchProducts();
     }
   };
 
@@ -180,12 +165,6 @@ export default function ProductsPage() {
           <p className="text-sm text-gray-700">Manage your inventory and stock</p>
         </div>
         <div className="flex gap-3">
-          <button 
-            onClick={handleSeed}
-            className="px-4 py-3 bg-gold-600 text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20"
-          >
-            Seed Initial Data
-          </button>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="px-4 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 flex items-center gap-2"

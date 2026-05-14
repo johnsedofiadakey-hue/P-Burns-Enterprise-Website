@@ -5,6 +5,7 @@ import Image from 'next/image'
 import CartIcon from '@/components/CartIcon'
 import Header from '@/components/Header'
 import WhatsAppFloat from '@/components/WhatsAppFloat'
+import AnalyticsTracker from '@/components/AnalyticsTracker'
 
 import { db } from '@/lib/firebase'
 import { doc, getDocFromServer } from 'firebase/firestore'
@@ -68,6 +69,9 @@ export default async function PublicLayout({
         '--color-charcoal-900': theme.secondary,
       } as React.CSSProperties}
     >
+      {/* Analytics */}
+      <AnalyticsTracker />
+
       {/* Header */}
       <Header />
 
