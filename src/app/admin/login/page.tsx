@@ -26,7 +26,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError('Invalid credentials')
     } else {
-      router.push('/admin')
+      window.location.href = '/admin'
     }
     setLoading(false)
   }

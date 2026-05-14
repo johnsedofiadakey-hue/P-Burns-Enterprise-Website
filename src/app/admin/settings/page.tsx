@@ -92,7 +92,15 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const docSnap = await getDoc(doc(db, "settings", "general"));
+        const [docSnap, themeSnap, statsSnap, aboutSnap, testimonialsSnap, projectsSnap] = await Promise.all([
+          getDoc(doc(db, "settings", "general")),
+          getDoc(doc(db, "settings", "theme")),
+          getDoc(doc(db, "settings", "stats")),
+          getDoc(doc(db, "settings", "about")),
+          getDoc(doc(db, "settings", "testimonials")),
+          getDoc(doc(db, "settings", "projects"))
+        ]);
+
         if (docSnap.exists()) {
           const data = docSnap.data();
           setPhone(data.phone || '');
@@ -108,7 +116,6 @@ export default function SettingsPage() {
           setWhatsappUrl(data.whatsappUrl || '');
         }
         
-        const themeSnap = await getDoc(doc(db, "settings", "theme"));
         if (themeSnap.exists()) {
           const data = themeSnap.data();
           setPrimaryColor(data.primary || '#B68D40');
@@ -117,7 +124,6 @@ export default function SettingsPage() {
           setLogoUrl(data.logoUrl || '');
         }
         
-        const statsSnap = await getDoc(doc(db, "settings", "stats"));
         if (statsSnap.exists()) {
           const data = statsSnap.data();
           setStat1Label(data.stat1Label || 'Projects Completed');
@@ -128,7 +134,6 @@ export default function SettingsPage() {
           setStat3Value(data.stat3Value || '20+');
         }
         
-        const aboutSnap = await getDoc(doc(db, "settings", "about"));
         if (aboutSnap.exists()) {
           const data = aboutSnap.data();
           setAboutHeroTitle(data.heroTitle || 'About P-Burns Enterprise');
@@ -137,7 +142,6 @@ export default function SettingsPage() {
           setAboutStoryContent(data.storyContent || 'Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.');
         }
         
-        const testimonialsSnap = await getDoc(doc(db, "settings", "testimonials"));
         if (testimonialsSnap.exists()) {
           const data = testimonialsSnap.data();
           setT1Name(data.t1Name || 'Kofi Annan');
