@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
+import { db, storage } from '@/lib/firebase'
 import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -180,6 +181,56 @@ export default function InvoicesPage() {
     }
   };
 
+  const handleSharePDF = async (method: 'whatsapp' | 'email') => {
+    const element = document.getElementById('invoice-paper');
+    if (!element || !selectedInvoice) return;
+    
+    showToast("Preparing document...");
+    
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true
+      });
+      const data = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4'
+      });
+      
+      const imgProperties = pdf.getImageProperties(data);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+      
+      pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      const pdfBlob = pdf.output('blob');
+      
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `invoices/${selectedInvoice.invoiceNumber}.pdf`);
+      showToast("Uploading to secure storage...");
+      const uploadResult = await uploadBytes(storageRef, pdfBlob);
+      const downloadURL = await getDownloadURL(uploadResult.ref);
+      
+      const message = `Here is your ${selectedInvoice.type || 'document'} (#${selectedInvoice.invoiceNumber}) from P-Burns Enterprise: ${downloadURL}`;
+      
+      if (method === 'whatsapp') {
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      } else if (method === 'email') {
+        const mailtoUrl = `mailto:?subject=${encodeURIComponent(selectedInvoice.type || 'Document')} #${selectedInvoice.invoiceNumber}&body=${encodeURIComponent(message)}`;
+        window.open(mailtoUrl, '_blank');
+      }
+      
+      showToast("Share link generated!");
+    } catch (error) {
+      console.error("Error sharing PDF:", error);
+      showToast("Error sharing PDF", "error");
+    }
+  };
+
   return (
     <div className="relative h-[calc(100vh-120px)] flex flex-col">
       {/* Animated Toast */}
@@ -280,6 +331,18 @@ export default function InvoicesPage() {
                       Convert to Invoice
                     </button>
                   )}
+                  <button 
+                    onClick={() => handleSharePDF('whatsapp')}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Share WA
+                  </button>
+                  <button 
+                    onClick={() => handleSharePDF('email')}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Share Email
+                  </button>
                 </div>
                 <div className="flex gap-2">
                   <button className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors">Record Payment</button>
