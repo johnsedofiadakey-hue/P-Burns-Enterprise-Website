@@ -201,19 +201,22 @@ export default function InvoicesPage() {
       return;
     }
     
+    const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(tag => tag.outerHTML)
+      .join('\n');
+
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Invoice ${selectedInvoice.invoiceNumber}</title>
+          ${styles}
           <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: Georgia, serif; color: #111111; background: #fff; }
             @page { margin: 15mm; size: A4; }
             @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
           </style>
         </head>
-        <body>${element.outerHTML}</body>
+        <body style="background: white;">${element.outerHTML}</body>
       </html>
     `;
     
