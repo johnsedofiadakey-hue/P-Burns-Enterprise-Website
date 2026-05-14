@@ -39,15 +39,46 @@ export default function ReportsPage() {
 
   const totalSales = orders.reduce((acc, o) => acc + (typeof o.total === 'number' ? o.total : parseFloat(o.total || 0)), 0)
 
-  // Mock data for charts if real data is too sparse
-  const monthlyData = [
-    { month: 'Jan', income: 4500, expense: 3000 },
-    { month: 'Feb', income: 5200, expense: 3200 },
-    { month: 'Mar', income: 6100, expense: 4000 },
-    { month: 'Apr', income: 5800, expense: 3800 },
-    { month: 'May', income: 7200, expense: 4500 },
-    { month: 'Jun', income: netProfit > 0 ? netProfit : 8000, expense: totalExpense > 0 ? totalExpense : 5000 }, // Use real data for current month if available
-  ]
+  // Calculate real monthly data from transactions
+  const calculateMonthlyData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const data = months.map(m => ({ month: m, income: 0, expense: 0 }));
+    
+    transactions.forEach(t => {
+      const date = t.createdAt ? new Date(t.createdAt) : new Date();
+      const monthIndex = date.getMonth();
+      const amount = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0);
+      
+      if (t.type === 'income') {
+        data[monthIndex].income += amount;
+      } else if (t.type === 'expense') {
+        data[monthIndex].expense += amount;
+      }
+    });
+    
+    const currentMonth = new Date().getMonth();
+    const last6Months = [];
+    for (let i = 5; i >= 0; i--) {
+      const idx = (currentMonth - i + 12) % 12;
+      last6Months.push(data[idx]);
+    }
+    
+    const hasData = last6Months.some(d => d.income > 0 || d.expense > 0);
+    if (!hasData) {
+      return [
+        { month: 'Jan', income: 4500, expense: 3000 },
+        { month: 'Feb', income: 5200, expense: 3200 },
+        { month: 'Mar', income: 6100, expense: 4000 },
+        { month: 'Apr', income: 5800, expense: 3800 },
+        { month: 'May', income: 7200, expense: 4500 },
+        { month: 'Jun', income: 8000, expense: 5000 },
+      ];
+    }
+    
+    return last6Months;
+  };
+
+  const monthlyData = calculateMonthlyData();
 
   return (
     <div>

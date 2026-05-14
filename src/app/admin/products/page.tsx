@@ -51,6 +51,32 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  const handleSeed = async () => {
+    if (!confirm('Are you sure you want to seed initial products? This will add duplicate items if already seeded.')) return;
+    setLoading(true);
+    try {
+      const initialProducts = [
+        { name: 'Ceramic Tile A', category: 'ceramics', price: 120.00, image: '/placeholder.png', description: 'High-quality ceramic tile.', stock: 100, status: 'In Stock', createdAt: new Date().toISOString() },
+        { name: 'Wooden Door B', category: 'doors', price: 450.00, image: '/placeholder.png', description: 'Robust wooden door.', stock: 50, status: 'In Stock', createdAt: new Date().toISOString() },
+        { name: 'Home Item C', category: 'home_items', price: 85.00, image: '/placeholder.png', description: 'Essential home item.', stock: 200, status: 'In Stock', createdAt: new Date().toISOString() },
+        { name: 'Ceramic Tile B', category: 'ceramics', price: 150.00, image: '/placeholder.png', description: 'Premium ceramic tile.', stock: 80, status: 'In Stock', createdAt: new Date().toISOString() },
+        { name: 'Steel Door', category: 'doors', price: 600.00, image: '/placeholder.png', description: 'Heavy security steel door.', stock: 30, status: 'In Stock', createdAt: new Date().toISOString() },
+      ]
+      
+      for (const prod of initialProducts) {
+        await addDoc(collection(db, "products"), prod);
+      }
+      
+      showToast("Seeded initial products successfully!");
+      fetchProducts();
+    } catch (error) {
+      console.error("Error seeding products:", error);
+      showToast("Error seeding products", "error")
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     
@@ -129,12 +155,20 @@ export default function ProductsPage() {
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Products</h2>
           <p className="text-sm text-gray-700">Manage your inventory and stock</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 flex items-center gap-2"
-        >
-          <span className="text-lg">+</span> Add Product
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleSeed}
+            className="px-4 py-3 bg-gold-600 text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20"
+          >
+            Seed Initial Data
+          </button>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 flex items-center gap-2"
+          >
+            <span className="text-lg">+</span> Add Product
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-x-auto border border-gray-100">

@@ -1,12 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { db } from '@/lib/firebase'
+import { collection, getDocs } from 'firebase/firestore'
 
 export default function ServicesPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [service, setService] = useState('windows')
   const [message, setMessage] = useState('')
+  const [services, setServices] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "services"));
+        if (!querySnapshot.empty) {
+          const fetchedServices = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setServices(fetchedServices);
+        } else {
+          setServices([
+            { name: 'Windows Supply & Installation', description: 'We source and install high-quality windows for residential and commercial buildings. Our team ensures precise measurement and perfect fit.' },
+            { name: 'General Supply Contracts', description: 'We handle bulk supply contracts for construction projects. Ceramics, doors, and other hardware items in large quantities.' }
+          ])
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+    fetchServices();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,47 +50,24 @@ export default function ServicesPage() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
-          {/* Windows Installation */}
-          <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 flex flex-col justify-between">
-            <div>
-              <div className="w-14 h-14 bg-gold-50 text-gold-600 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-                </svg>
+          {services.map((serv, index) => (
+            <div key={serv.id || index} className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 bg-gold-50 text-gold-600 rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-serif font-bold text-[#111111] mb-3">{serv.name}</h2>
+                <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                  {serv.description}
+                </p>
+                {serv.rate && serv.rate !== 'Varies' && (
+                  <p className="text-sm font-bold text-gold-600 mt-auto">Rate: {serv.rate}</p>
+                )}
               </div>
-              <h2 className="text-xl font-serif font-bold text-[#111111] mb-3">Windows Supply & Installation</h2>
-              <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                We source and install high-quality windows for residential and commercial buildings. 
-                Our team ensures precise measurement and perfect fit.
-              </p>
-              <ul className="text-sm text-gray-500 space-y-2 mb-6">
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Aluminum sliding windows</li>
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Casement windows</li>
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Custom sizes available</li>
-              </ul>
             </div>
-          </div>
-
-          {/* General Contracts */}
-          <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100 flex flex-col justify-between">
-            <div>
-              <div className="w-14 h-14 bg-gold-50 text-gold-600 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-serif font-bold text-[#111111] mb-3">General Supply Contracts</h2>
-              <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                We handle bulk supply contracts for construction projects. 
-                Ceramics, doors, and other hardware items in large quantities.
-              </p>
-              <ul className="text-sm text-gray-500 space-y-2 mb-6">
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Site delivery</li>
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Bulk discounts</li>
-                <li className="flex items-center gap-2"><span className="text-gold-500">✔</span> Project consultation</li>
-              </ul>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Request Form */}

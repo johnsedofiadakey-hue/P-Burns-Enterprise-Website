@@ -36,6 +36,29 @@ export default function ServicesPage() {
     }
   }
 
+  const handleSeed = async () => {
+    if (!confirm('Are you sure you want to seed initial services? This will add duplicate items if already seeded.')) return;
+    setLoading(true);
+    try {
+      const initialServices = [
+        { name: 'Windows Supply & Installation', description: 'We source and install high-quality windows for residential and commercial buildings. Our team ensures precise measurement and perfect fit.', rate: 'Varies', status: 'Active', createdAt: new Date().toISOString() },
+        { name: 'General Supply Contracts', description: 'We handle bulk supply contracts for construction projects. Ceramics, doors, and other hardware items in large quantities.', rate: 'Varies', status: 'Active', createdAt: new Date().toISOString() },
+      ]
+      
+      for (const serv of initialServices) {
+        await addDoc(collection(db, "services"), serv);
+      }
+      
+      showToast("Seeded initial services successfully!");
+      fetchServices();
+    } catch (error) {
+      console.error("Error seeding services:", error);
+      showToast("Error seeding services", "error")
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchServices();
   }, []);
@@ -97,12 +120,20 @@ export default function ServicesPage() {
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Services</h2>
           <p className="text-sm text-gray-700">Manage rates for additional services like transport and loading</p>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20"
-        >
-          Add Service
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleSeed}
+            className="px-4 py-3 bg-gold-600 text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20"
+          >
+            Seed Initial Data
+          </button>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-4 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20"
+          >
+            Add Service
+          </button>
+        </div>
       </div>
 
       {loading ? (
