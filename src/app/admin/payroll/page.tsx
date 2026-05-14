@@ -86,6 +86,95 @@ export default function PayrollPage() {
     }
   };
 
+  const handleProcessPayroll = async () => {
+    if (!confirm('Are you sure you want to process payroll for all employees? This will record the payments.')) return;
+    setSaving(true);
+    try {
+      const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+      const totalAmount = employees.reduce((acc, emp) => acc + emp.netSalary, 0);
+      
+      const docData = {
+        month: currentMonth,
+        totalAmount,
+        employeeCount: employees.length,
+        createdAt: new Date().toISOString(),
+        details: employees.map(emp => ({
+          name: emp.name,
+          netSalary: emp.netSalary
+        }))
+      };
+      
+      await addDoc(collection(db, "payrolls"), docData);
+      showToast(`Payroll for ${currentMonth} processed successfully!`);
+    } catch (error) {
+      console.error("Error processing payroll:", error);
+      showToast("Error processing payroll", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleGeneratePayslip = async (emp: any) => {
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(17, 17, 17); // #111111
+      doc.text("P-BURNS ENTERPRISE", 105, 20, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text("MONTHLY PAYSLIP", 105, 30, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, 35, { align: 'center' });
+      
+      // Divider
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 40, 190, 40);
+      
+      // Employee Details
+      doc.setFontSize(12);
+      doc.setTextColor(17, 17, 17);
+      doc.text(`Employee Name: ${emp.name}`, 20, 50);
+      doc.text(`Role: ${emp.role}`, 20, 60);
+      
+      // Financial Details
+      doc.text("Earnings", 20, 80);
+      doc.line(20, 82, 90, 82);
+      doc.text(`Basic Salary:`, 20, 90);
+      doc.text(`GHS ${emp.basicSalary?.toFixed(2)}`, 70, 90, { align: 'right' });
+      doc.text(`Allowances:`, 20, 100);
+      doc.text(`GHS ${emp.allowances?.toFixed(2)}`, 70, 100, { align: 'right' });
+      
+      doc.text("Deductions", 120, 80);
+      doc.line(120, 82, 190, 82);
+      doc.text(`Deductions:`, 120, 90);
+      doc.text(`GHS ${emp.deductions?.toFixed(2)}`, 170, 90, { align: 'right' });
+      
+      // Divider
+      doc.line(20, 110, 190, 110);
+      
+      // Net Salary
+      doc.setFontSize(14);
+      doc.text(`Net Salary:`, 20, 120);
+      doc.text(`GHS ${emp.netSalary?.toFixed(2)}`, 190, 120, { align: 'right' });
+      
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("This is a computer generated payslip.", 105, 140, { align: 'center' });
+      
+      doc.save(`Payslip_${emp.name.replace(' ', '_')}.pdf`);
+      showToast(`Payslip generated for ${emp.name}`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      showToast("Error generating PDF", "error");
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this employee?')) return;
     try {
@@ -115,12 +204,21 @@ export default function PayrollPage() {
           <h2 className="text-2xl font-serif font-bold text-[#111111]">Payroll Management</h2>
           <p className="text-sm text-gray-700">Manage employees and monthly payrolls</p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-6 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20"
-        >
-          Add Employee
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={handleProcessPayroll}
+            disabled={employees.length === 0}
+            className={`px-4 py-3 bg-gold-600 text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-500 transition-colors shadow-lg shadow-gold-900/20 ${employees.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            Process Payroll
+          </button>
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-xs rounded-lg hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20"
+          >
+            Add Employee
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -148,7 +246,13 @@ export default function PayrollPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">GHS {emp.allowances?.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">GHS {emp.deductions?.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gold-600">GHS {emp.netSalary?.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center flex gap-3 justify-center">
+                    <button 
+                      onClick={() => handleGeneratePayslip(emp)}
+                      className="text-gold-600 hover:text-gold-900 font-bold"
+                    >
+                      Payslip
+                    </button>
                     <button 
                       onClick={() => handleDelete(emp.id)}
                       className="text-red-600 hover:text-red-900 font-bold"
