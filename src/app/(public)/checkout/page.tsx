@@ -55,35 +55,37 @@ export default function CheckoutPage() {
       amount: total * 100, // Paystack expects amount in pesewas
       currency: 'GHS',
       ref: (new Date()).getTime().toString(),
-      callback: async function(response: any) {
-        try {
-          const res = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name,
-              email,
-              phone,
-              address,
-              items: cartItems,
-              subtotal,
-              deliveryFee,
-              total,
-              paymentReference: response.reference
-            })
-          });
+      callback: function(response: any) {
+        (async () => {
+          try {
+            const res = await fetch('/api/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name,
+                email,
+                phone,
+                address,
+                items: cartItems,
+                subtotal,
+                deliveryFee,
+                total,
+                paymentReference: response.reference
+              })
+            });
 
-          const data = await res.json();
-          if (data.success) {
-            localStorage.removeItem('cart')
-            router.push('/checkout/success')
-          } else {
-            alert('Payment successful, but failed to process order. Please contact support.')
+            const data = await res.json();
+            if (data.success) {
+              localStorage.removeItem('cart')
+              router.push('/checkout/success')
+            } else {
+              alert('Payment successful, but failed to process order. Please contact support.')
+            }
+          } catch (error) {
+            console.error("Error saving order:", error);
+            alert('Payment successful, but failed to process order. Please contact support.');
           }
-        } catch (error) {
-          console.error("Error saving order:", error);
-          alert('Payment successful, but failed to process order. Please contact support.');
-        }
+        })();
       },
       onClose: function() {
         alert('Payment closed')
@@ -143,6 +145,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen py-16">
+      <Script 
+        src="https://js.paystack.co/v1/inline.js" 
+        strategy="afterInteractive"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <span className="text-gold-500 font-bold uppercase tracking-widest text-sm mb-2 block">Secure Checkout</span>
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-12">Checkout</h1>
@@ -153,10 +159,6 @@ export default function CheckoutPage() {
             <div className="bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100">
               <h2 className="text-xl font-serif font-bold text-[#111111] mb-6">Customer Details</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <Script 
-                  src="https://js.paystack.co/v1/inline.js" 
-                  strategy="lazyOnload"
-                />
                 <div>
                   <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide mb-2">Full Name</label>
                   <input 
