@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Script from 'next/script'
 import { db } from '@/lib/firebase'
-import { collection, addDoc } from 'firebase/firestore'
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore'
 
 export default function CheckoutPage() {
   const [name, setName] = useState('')
@@ -15,11 +15,25 @@ export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<{id:string, name:string, price:number, quantity:number}[]>([])
   const router = useRouter()
 
+  const [paystackKey, setPaystackKey] = useState('')
+
   useEffect(() => {
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       setCartItems(JSON.parse(savedCart))
     }
+
+    const fetchSettings = async () => {
+      try {
+        const settingsSnap = await getDoc(doc(db, "settings", "general"));
+        if (settingsSnap.exists()) {
+          setPaystackKey(settingsSnap.data().paystackPublicKey || '');
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    fetchSettings();
   }, [])
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -32,7 +46,7 @@ export default function CheckoutPage() {
       return;
     }
     const handler = (window as any).PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
+      key: paystackKey || process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
       email: email,
       amount: total * 100, // Paystack expects amount in pesewas
       currency: 'GHS',
