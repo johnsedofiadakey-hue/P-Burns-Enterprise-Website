@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore'
 import Link from 'next/link'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -16,6 +16,7 @@ export default function InvoicesPage() {
   // Create Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [docType, setDocType] = useState('invoice') // invoice, quote, receipt, refund
+  const [status, setStatus] = useState('draft') // draft, paid, partial, unpaid
   const [customer, setCustomer] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [items, setItems] = useState([{ name: '', quantity: 1, rate: 0 }])
@@ -104,7 +105,7 @@ export default function InvoicesPage() {
         items,
         total,
         notes,
-        status: 'draft',
+        status: status,
         type: docType,
         createdAt: new Date().toISOString()
       };
@@ -157,6 +158,25 @@ export default function InvoicesPage() {
     } catch (error) {
       console.error("Error generating PDF:", error);
       showToast("Error generating PDF", "error");
+    }
+  };
+
+  const handleConvertInvoice = async () => {
+    if (!selectedInvoice) return;
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, "invoices", selectedInvoice.id), {
+        type: 'invoice',
+        invoiceNumber: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+      });
+      showToast("Quote converted to Invoice!");
+      setSelectedInvoice({ ...selectedInvoice, type: 'invoice' });
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error converting quote:", error);
+      showToast("Error converting quote", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -252,6 +272,14 @@ export default function InvoicesPage() {
                   >
                     Print/PDF
                   </button>
+                  {selectedInvoice.type === 'quote' && (
+                    <button 
+                      onClick={handleConvertInvoice}
+                      className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Convert to Invoice
+                    </button>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors">Record Payment</button>
@@ -281,7 +309,7 @@ export default function InvoicesPage() {
                 <div className="flex justify-between mb-12">
                   <div>
                     <div className="mb-2">
-                      <Image src="/logo-transparent.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" />
+                      <Image src="/logo-transparent.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" unoptimized />
                     </div>
                     <div className="text-xs text-gray-700 mt-2">
                       <p>Sefwi Dwirase Western North</p>
@@ -416,6 +444,20 @@ export default function InvoicesPage() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
+                <select 
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="paid">Paid</option>
+                  <option value="partial">Partial Payment</option>
+                  <option value="unpaid">Unpaid</option>
+                </select>
               </div>
 
               <div>
