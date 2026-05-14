@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors. Serving Sefwi Dwinase, Western North Region and Kumasi.",
   keywords: ["ceramics", "doors", "tiles", "building materials", "Ghana", "construction", "pre-order", "Sefwi Dwinase", "Kumasi", "Western North Region"],
   icons: {
-    icon: '/logo_high_quality.png',
+    icon: '/logo.png',
   },
   openGraph: {
     title: "P-Burns Enterprise - Premium Ceramics & Doors in Sefwi Dwinase & Kumasi",

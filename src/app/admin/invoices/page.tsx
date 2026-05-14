@@ -16,6 +16,7 @@ export default function InvoicesPage() {
   
   // Create Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [docType, setDocType] = useState('invoice') // invoice, quote, receipt, refund
   const [status, setStatus] = useState('draft') // draft, paid, partial, unpaid
   const [customer, setCustomer] = useState('')
@@ -108,13 +109,19 @@ export default function InvoicesPage() {
         notes,
         status: status,
         type: docType,
-        createdAt: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       };
       
-      await addDoc(collection(db, "invoices"), docData);
+      if (isEditing && selectedInvoice) {
+        await updateDoc(doc(db, "invoices", selectedInvoice.id), docData);
+        showToast('Document updated successfully!');
+      } else {
+        await addDoc(collection(db, "invoices"), { ...docData, createdAt: new Date().toISOString() });
+        showToast('Document created successfully!');
+      }
       
-      showToast('Document created successfully!');
       setIsCreateModalOpen(false);
+      setIsEditing(false);
       // Reset form
       setCustomer('');
       setItems([{ name: '', quantity: 1, rate: 0 }]);
@@ -127,6 +134,32 @@ export default function InvoicesPage() {
       showToast('Error creating document: ' + error.message, "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEdit = () => {
+    if (!selectedInvoice) return;
+    setIsEditing(true);
+    setDocType(selectedInvoice.type || 'invoice');
+    setStatus(selectedInvoice.status || 'draft');
+    setCustomer(selectedInvoice.customer || '');
+    setDate(selectedInvoice.date || '');
+    setItems(selectedInvoice.items || [{ name: '', quantity: 1, rate: 0 }]);
+    setNotes(selectedInvoice.notes || 'Thanks for your business.');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleRecordPayment = async () => {
+    if (!selectedInvoice) return;
+    try {
+      const docRef = doc(db, "invoices", selectedInvoice.id);
+      await updateDoc(docRef, { status: 'paid' });
+      setSelectedInvoice({ ...selectedInvoice, status: 'paid' });
+      fetchInvoices();
+      showToast('Payment recorded successfully!');
+    } catch (error) {
+      console.error("Error recording payment:", error);
+      showToast('Error recording payment', 'error');
     }
   };
 
@@ -377,8 +410,18 @@ export default function InvoicesPage() {
                   >
                     ← Back
                   </button>
-                  <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Edit</button>
-                  <button className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">Send</button>
+                  <button 
+                    onClick={handleEdit}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => handleSharePDF('whatsapp')}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Send
+                  </button>
                   <button 
                     onClick={handleDownloadPDF}
                     className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
@@ -394,12 +437,6 @@ export default function InvoicesPage() {
                     </button>
                   )}
                   <button 
-                    onClick={() => handleSharePDF('whatsapp')}
-                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Share WA
-                  </button>
-                  <button 
                     onClick={() => handleSharePDF('email')}
                     className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                   >
@@ -407,7 +444,12 @@ export default function InvoicesPage() {
                   </button>
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors">Record Payment</button>
+                  <button 
+                    onClick={handleRecordPayment}
+                    className="px-4 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors"
+                  >
+                    Record Payment
+                  </button>
                   <button 
                     onClick={() => handleDelete(selectedInvoice.id)}
                     className="px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors"
