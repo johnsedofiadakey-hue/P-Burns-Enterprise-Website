@@ -23,6 +23,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -73,6 +74,7 @@ export default function ProductsPage() {
       showToast("Deleting product...");
       await deleteDoc(doc(db, "products", id));
       setProducts(products.filter(p => p.id !== id));
+      setConfirmDeleteId(null);
       showToast("Product deleted successfully!");
     } catch (error: any) {
       console.error("Error deleting product:", error);
@@ -217,12 +219,29 @@ export default function ProductsPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold flex gap-4">
                   <Link href={`/admin/products/${product.id}/edit`} className="text-gold-600 hover:text-gold-700 transition-colors">Edit</Link>
-                  <button 
-                    onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-700 transition-colors"
-                  >
-                    Delete
-                  </button>
+                  {confirmDeleteId === product.id ? (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        className="text-red-600 hover:text-red-700 font-bold transition-colors"
+                      >
+                        Confirm
+                      </button>
+                      <button 
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="text-gray-600 hover:text-gray-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setConfirmDeleteId(product.id)}
+                      className="text-red-600 hover:text-red-700 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
