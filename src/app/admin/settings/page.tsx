@@ -14,6 +14,9 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('info@pburns.com')
   const [address, setAddress] = useState('Sefwi Dwinase, Western North Region')
   const [paystackPublicKey, setPaystackPublicKey] = useState('')
+  const [resendApiKey, setResendApiKey] = useState('')
+  const [smsApiKey, setSmsApiKey] = useState('')
+  const [smsSenderId, setSmsSenderId] = useState('PBurns')
   
   // Bank Details
   const [bankName, setBankName] = useState('GT Bank')
@@ -119,6 +122,9 @@ export default function SettingsPage() {
           setFacebookUrl(data.facebookUrl || '');
           setWhatsappUrl(data.whatsappUrl || '');
           setPaystackPublicKey(data.paystackPublicKey || '');
+          setResendApiKey(data.resendApiKey || '');
+          setSmsApiKey(data.smsApiKey || '');
+          setSmsSenderId(data.smsSenderId || 'PBurns');
         }
         
         if (themeSnap.exists()) {
@@ -214,7 +220,7 @@ export default function SettingsPage() {
       await setDoc(doc(db, "settings", "general"), {
         phone, email, address, bankName, accountName, accountNumber, terms,
         tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
-        paystackPublicKey,
+        paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
         updatedAt: new Date().toISOString()
       });
       
@@ -394,6 +400,42 @@ export default function SettingsPage() {
                   placeholder="pk_live_..."
                 />
                 <p className="text-xs text-gray-500 mt-1">Paste your Paystack Public Key here.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Resend API Key (Email)</label>
+                  <input 
+                    type="password" 
+                    value={resendApiKey} 
+                    onChange={(e) => setResendApiKey(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    placeholder="re_..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">SMS API Key (Arkesel)</label>
+                  <input 
+                    type="password" 
+                    value={smsApiKey} 
+                    onChange={(e) => setSmsApiKey(e.target.value)} 
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    placeholder="Arkesel API Key"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">SMS Sender ID</label>
+                <input 
+                  type="text" 
+                  value={smsSenderId} 
+                  onChange={(e) => setSmsSenderId(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  placeholder="PBurns"
+                  maxLength={11}
+                />
+                <p className="text-xs text-gray-500 mt-1">Max 11 characters. This appears as the sender name.</p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Address</label>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { sendEmail } from '@/lib/email';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(request: Request) {
   try {
@@ -59,6 +60,14 @@ export async function POST(request: Request) {
         </div>
       `
     });
+
+    // Send SMS to customer
+    if (phone) {
+      await sendSMS({
+        to: phone,
+        message: `Hello ${name}, thank you for your order! Your order ${orderNumber} has been confirmed. Total: GH₵ ${total.toFixed(2)}. P-Burns Enterprise.`
+      });
+    }
 
     return NextResponse.json({ success: true, orderId: orderDoc.id });
   } catch (error) {

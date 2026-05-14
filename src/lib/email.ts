@@ -1,8 +1,22 @@
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  const apiKey = process.env.RESEND_API_KEY;
+  let apiKey = process.env.RESEND_API_KEY;
   
   if (!apiKey) {
-    console.warn("RESEND_API_KEY is not set. Skipping email send.");
+    try {
+      const settingsSnap = await getDoc(doc(db, "settings", "general"));
+      if (settingsSnap.exists()) {
+        apiKey = settingsSnap.data().resendApiKey || '';
+      }
+    } catch (error) {
+      console.error("Error fetching email settings:", error);
+    }
+  }
+
+  if (!apiKey) {
+    console.warn("Resend API Key is not set. Skipping email send.");
     return null;
   }
 
