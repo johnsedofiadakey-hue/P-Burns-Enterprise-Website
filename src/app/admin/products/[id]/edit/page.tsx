@@ -14,8 +14,8 @@ export default function EditProductPage() {
   const [stock, setStock] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -43,7 +43,11 @@ export default function EditProductPage() {
           setStock(String(data.stock || ''))
           setCategory(data.category || '')
           setStatus(data.status || 'draft')
-          setImagePreview(data.image || '')
+          if (data.images && Array.isArray(data.images)) {
+            setImagePreviews(data.images);
+          } else if (data.image) {
+            setImagePreviews([data.image]);
+          }
         } else {
           showToast('Product not found', 'error')
           router.push('/admin/products')
@@ -63,51 +67,45 @@ export default function EditProductPage() {
     fetchData()
   }, [id, router])
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     try {
-      let imageUrl = imagePreview
-
-      if (imageFile) {
-        setUploading(true)
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        formData.append('folder', 'products');
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'Image upload failed');
+      setUploading(true)
+      
+      let imageUrls = imagePreviews.filter(p => !p.startsWith('blob:'));
+      
+      if (imageFiles.length > 0) {
+        for (const file of imageFiles) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('folder', 'products');
+          
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            throw new Error('Image upload failed');
+          }
+          
+          const data = await response.json();
+          imageUrls.push(data.url);
         }
-        
-        const data = await response.json();
-        imageUrl = data.url;
-        setUploading(false)
       }
-
-      await updateDoc(doc(db, "products", id), {
+      
+      await updateDoc(doc(db, "products", id as string), {
         name,
         description,
         price: parseFloat(price),
         stock: parseInt(stock),
         category,
         status,
-        image: imageUrl,
+        image: imageUrls[0] || '/placeholder.png',
+        images: imageUrls,
         updatedAt: new Date().toISOString()
-      })
+      });
 
       showToast('Product updated successfully!')
       setTimeout(() => router.push('/admin/products'), 1000)
@@ -163,25 +161,28 @@ export default function EditProductPage() {
 
           {/* Image Upload */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Image</label>
-            <div className="flex gap-4 items-start">
-              <div className="w-24 h-24 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex items-center justify-center relative flex-shrink-0">
-                {imagePreview ? (
-                  <Image src={imagePreview} alt="Product" fill className="object-cover" unoptimized />
-                ) : (
-                  <span className="text-xs text-gray-400">No image</span>
-                )}
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Images</label>
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mb-2">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative w-20 h-20 bg-gray-50 border border-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                    <Image src={preview} alt="Product" fill className="object-cover" unoptimized />
+                  </div>
+                ))}
               </div>
-              <div className="flex-1">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm"
-                />
-                {imageFile && <p className="text-xs text-gray-500 mt-1">New image selected: {imageFile.name}</p>}
-              </div>
-            </div>
+            )}
+            <input 
+              type="file" 
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                setImageFiles(files);
+                setImagePreviews([...imagePreviews, ...files.map(f => URL.createObjectURL(f))]);
+              }}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+            />
+            {imageFiles.length > 0 && <p className="text-xs text-gray-500 mt-1">{imageFiles.length} new files selected</p>}
           </div>
 
           <div>

@@ -135,8 +135,14 @@ export default function ShopPage() {
                 <div key={product.id} className="bg-white rounded-2xl shadow-xl shadow-charcoal-900/5 hover:-translate-y-2 transition-all duration-500 border border-gray-100 overflow-hidden group">
                   <Link href={`/shop/${product.id}`}>
                     <div className="relative h-64 bg-gradient-to-br from-charcoal-900 to-charcoal-950 flex items-center justify-center overflow-hidden">
-                      <div className="absolute inset-0 opacity-10 bg-[url('/grid.svg')]"></div>
-                      <svg className="w-12 h-12 text-gold-500/50 group-hover:scale-110 group-hover:text-gold-500 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      {product.image ? (
+                        <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-all duration-500" unoptimized />
+                      ) : (
+                        <>
+                          <div className="absolute inset-0 opacity-10 bg-[url('/grid.svg')]"></div>
+                          <svg className="w-12 h-12 text-gold-500/50 group-hover:scale-110 group-hover:text-gold-500 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </>
+                      )}
                     </div>
                   </Link>
                   <div className="p-6">

@@ -491,7 +491,7 @@ export default function InvoicesPage() {
                       <p>{settings?.address || 'Sefwi Dwirase Western North'}</p>
                       <p>{settings?.phone || '0537749190'}</p>
                       <p>{settings?.email || 'info@pburns.com'}</p>
-                      <p>www.pburns.com</p>
+                      <p>{settings?.websiteUrl || 'www.pburns.com'}</p>
                     </div>
                   </div>
                   <div className="text-right">

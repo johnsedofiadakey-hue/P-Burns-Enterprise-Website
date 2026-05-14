@@ -45,6 +45,9 @@ export default function SettingsPage() {
   const [facebookUrl, setFacebookUrl] = useState('')
   const [whatsappUrl, setWhatsappUrl] = useState('')
   
+  // Website URL
+  const [websiteUrl, setWebsiteUrl] = useState('')
+  
   // Theme
   const [primaryColor, setPrimaryColor] = useState('#B68D40')
   const [secondaryColor, setSecondaryColor] = useState('#111111')
@@ -141,6 +144,7 @@ export default function SettingsPage() {
           setWhatsappNumber(data.whatsappNumber || '+233123456789');
           setFacebookUrl(data.facebookUrl || '');
           setWhatsappUrl(data.whatsappUrl || '');
+          setWebsiteUrl(data.websiteUrl || '');
           setPaystackPublicKey(data.paystackPublicKey || '');
           setResendApiKey(data.resendApiKey || '');
           setSmsApiKey(data.smsApiKey || '');
@@ -253,7 +257,7 @@ export default function SettingsPage() {
         phone, email, address, bankName, accountName, accountNumber,
         momoNumber, momoName, momoNetwork,
         terms,
-        tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
+        tiktokUrl, instagramUrl, facebookUrl, whatsappUrl, websiteUrl,
         paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
         taxPercentage, isTaxEnabled, deliveryFee, whatsappNumber,
         updatedAt: new Date().toISOString()
@@ -423,6 +427,17 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Website URL</label>
+                <input 
+                  type="text" 
+                  value={websiteUrl} 
+                  onChange={(e) => setWebsiteUrl(e.target.value)} 
+                  placeholder="e.g. www.pburns.com"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                />
               </div>
 
               <div>

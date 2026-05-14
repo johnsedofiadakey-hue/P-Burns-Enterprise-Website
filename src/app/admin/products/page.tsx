@@ -18,8 +18,8 @@ export default function ProductsPage() {
   const [stock, setStock] = useState('')
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -90,26 +90,28 @@ export default function ProductsPage() {
     setSaving(true)
     
     try {
-      let imageUrl = '/placeholder.png';
+      let imageUrls: string[] = [];
       
-      if (imageFile) {
+      if (imageFiles.length > 0) {
         setUploading(true);
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        formData.append('folder', 'products');
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'Image upload failed');
+        for (const file of imageFiles) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('folder', 'products');
+          
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Image upload failed');
+          }
+          
+          const data = await response.json();
+          imageUrls.push(data.url);
         }
-        
-        const data = await response.json();
-        imageUrl = data.url;
         setUploading(false);
       }
       
@@ -118,9 +120,10 @@ export default function ProductsPage() {
         description,
         price: parseFloat(price),
         stock: parseInt(stock),
+        image: imageUrls[0] || '/placeholder.png',
+        images: imageUrls,
         category,
         status,
-        image: imageUrl,
         createdAt: new Date().toISOString()
       });
       
@@ -133,8 +136,8 @@ export default function ProductsPage() {
       setStock('');
       setCategory('');
       setStatus('draft');
-      setImageFile(null);
-      setImagePreview('');
+      setImageFiles([]);
+      setImagePreviews([]);
       
       // Refresh list
       fetchProducts();
@@ -331,24 +334,29 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Image</label>
-                {imagePreview && (
-                  <div className="w-full h-32 bg-gray-50 border border-gray-100 rounded-lg overflow-hidden relative mb-2">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Images</label>
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="h-20 bg-gray-50 border border-gray-100 rounded-lg overflow-hidden relative">
+                        <img src={preview} alt="Preview" className="w-full h-full object-contain" />
+                      </div>
+                    ))}
                   </div>
                 )}
                 <input 
                   type="file" 
                   accept="image/*"
+                  multiple
                   onChange={(e) => {
-                    const f = e.target.files?.[0] || null;
-                    setImageFile(f);
-                    if (f) setImagePreview(URL.createObjectURL(f));
+                    const files = Array.from(e.target.files || []);
+                    setImageFiles(files);
+                    setImagePreviews(files.map(f => URL.createObjectURL(f)));
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                 />
-                {imageFile && (
-                  <p className="text-xs text-gray-700 mt-1">Selected: {imageFile.name}</p>
+                {imageFiles.length > 0 && (
+                  <p className="text-xs text-gray-700 mt-1">{imageFiles.length} files selected</p>
                 )}
               </div>
             </form>

@@ -20,6 +20,7 @@ export default function ProductDetailPage() {
   const id = params.id
   const [product, setProduct] = useState<any>(null)
   const [quantity, setQuantity] = useState(1)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -66,9 +67,37 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           {/* Image Gallery */}
-          <div className="relative h-[500px] bg-gradient-to-br from-charcoal-900 to-charcoal-950 rounded-sm flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 opacity-10 bg-[url('/grid.svg')]"></div>
-            <svg className="w-20 h-20 text-gold-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <div className="flex flex-col gap-4">
+            <div className="relative h-[400px] bg-white rounded-sm flex items-center justify-center overflow-hidden border border-gray-100">
+              {product.image || (product.images && product.images.length > 0) ? (
+                <Image 
+                  src={product.images && product.images.length > 0 ? product.images[currentImageIndex] : product.image} 
+                  alt={product.name} 
+                  fill 
+                  className="object-contain" 
+                  unoptimized 
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-400">
+                  <svg className="w-20 h-20 text-gold-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  <span className="text-sm mt-2">No image available</span>
+                </div>
+              )}
+            </div>
+            
+            {product.images && product.images.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {product.images.map((img: string, index: number) => (
+                  <div 
+                    key={index} 
+                    className={`relative h-16 cursor-pointer border ${index === currentImageIndex ? 'border-gold-500' : 'border-gray-200'} rounded-sm overflow-hidden bg-white`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <Image src={img} alt={`${product.name} thumbnail ${index + 1}`} fill className="object-cover" unoptimized />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
