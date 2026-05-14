@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 
 export default function TrackPage() {
   const [orderId, setOrderId] = useState('')
@@ -17,12 +17,24 @@ export default function TrackPage() {
     setOrder(null);
     
     try {
+      const trimmedId = orderId.trim();
       // Search by orderNumber
-      const q = query(collection(db, "orders"), where("orderNumber", "==", orderId.trim()));
+      const q = query(collection(db, "orders"), where("orderNumber", "==", trimmedId.toUpperCase()));
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
         setOrder(querySnapshot.docs[0].data());
+      } else {
+        // Fallback: Search by doc ID
+        try {
+          const docRef = doc(db, "orders", trimmedId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setOrder(docSnap.data());
+          }
+        } catch (e) {
+          // Ignore error if it's not a valid doc ID format
+        }
       }
     } catch (error) {
       console.error("Error tracking order:", error);
