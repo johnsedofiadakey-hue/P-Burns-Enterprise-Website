@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { db, storage } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore'
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, getDoc } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 import jsPDF from 'jspdf'
@@ -23,10 +23,27 @@ export default function InvoicesPage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [items, setItems] = useState([{ name: '', quantity: 1, rate: 0 }])
   const [notes, setNotes] = useState('Thanks for your business.')
+  const [discount, setDiscount] = useState(0)
+  const [applyTax, setApplyTax] = useState(false)
   const [saving, setSaving] = useState(false)
   
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [settings, setSettings] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const docSnap = await getDoc(doc(db, "settings", "general"));
+        if (docSnap.exists()) {
+          setSettings(docSnap.data());
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type })
@@ -89,7 +106,11 @@ export default function InvoicesPage() {
   };
 
   const calculateTotal = () => {
-    return items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
+    const subTotal = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
+    const discountAmount = subTotal * (discount / 100);
+    const afterDiscount = subTotal - discountAmount;
+    const taxAmount = applyTax ? afterDiscount * 0.15 : 0; // 15% VAT
+    return afterDiscount + taxAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +127,8 @@ export default function InvoicesPage() {
         date,
         items,
         total,
+        discount,
+        applyTax,
         notes,
         status: status,
         type: docType,
@@ -146,6 +169,8 @@ export default function InvoicesPage() {
     setDate(selectedInvoice.date || '');
     setItems(selectedInvoice.items || [{ name: '', quantity: 1, rate: 0 }]);
     setNotes(selectedInvoice.notes || 'Thanks for your business.');
+    setDiscount(selectedInvoice.discount || 0);
+    setApplyTax(selectedInvoice.applyTax || false);
     setIsCreateModalOpen(true);
   };
 
@@ -482,8 +507,32 @@ export default function InvoicesPage() {
                   <div className="w-1/3 space-y-2 text-sm">
                     <div className="flex justify-between text-gray-800">
                       <span>Sub Total</span>
-                      <span className="font-bold text-[#111111]">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</span>
+                      <span className="font-bold text-[#111111]">GH₵ {
+                        selectedInvoice.items ? 
+                        selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0).toFixed(2) : 
+                        parseFloat(selectedInvoice.total).toFixed(2)
+                      }</span>
                     </div>
+                    {selectedInvoice.discount > 0 && (
+                      <div className="flex justify-between text-gray-800">
+                        <span>Discount ({selectedInvoice.discount}%)</span>
+                        <span className="font-bold text-red-600">-GH₵ {
+                          (selectedInvoice.items ? 
+                          selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0) * (selectedInvoice.discount / 100) : 
+                          0).toFixed(2)
+                        }</span>
+                      </div>
+                    )}
+                    {selectedInvoice.applyTax && (
+                      <div className="flex justify-between text-gray-800">
+                        <span>VAT (15%)</span>
+                        <span className="font-bold text-[#111111]">GH₵ {
+                          ((selectedInvoice.items ? 
+                          selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0) * (1 - (selectedInvoice.discount || 0) / 100) : 
+                          parseFloat(selectedInvoice.total)) * 0.15).toFixed(2)
+                        }</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-lg font-serif font-bold border-t border-gray-100 pt-2">
                       <span className="text-[#111111]">Total</span>
                       <span className="text-gold-600">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</span>
@@ -499,6 +548,20 @@ export default function InvoicesPage() {
                 <div className="border-t border-gray-100 pt-6">
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Notes</h4>
                   <p className="text-xs text-gray-700">{selectedInvoice.notes || 'Thanks for your business.'}</p>
+                </div>
+
+                {/* Bank Details */}
+                <div className="border-t border-gray-100 pt-6 mt-6">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Bank Details</h4>
+                  {settings ? (
+                    <>
+                      <p className="text-xs text-gray-700 font-bold">Bank: {settings.bankName || 'GCB Bank'}</p>
+                      <p className="text-xs text-gray-700">Account Name: {settings.accountName || 'P-Burns Enterprise'}</p>
+                      <p className="text-xs text-gray-700">Account Number: {settings.accountNumber || '1234567890123'}</p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-500">Loading bank details...</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -632,6 +695,33 @@ export default function InvoicesPage() {
                 >
                   + Add Item
                 </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Discount (%)</label>
+                  <input 
+                    type="number" 
+                    value={discount}
+                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                    min="0"
+                    max="100"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Apply Tax (15%)</label>
+                  <div className="flex items-center h-[50px]">
+                    <input 
+                      type="checkbox" 
+                      checked={applyTax}
+                      onChange={(e) => setApplyTax(e.target.checked)}
+                      className="w-5 h-5 text-gold-500 border-gray-200 rounded focus:ring-gold-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Add 15% VAT</span>
+                  </div>
+                </div>
               </div>
 
               <div>
