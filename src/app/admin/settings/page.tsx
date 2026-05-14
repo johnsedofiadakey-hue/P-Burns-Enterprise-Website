@@ -23,6 +23,11 @@ export default function SettingsPage() {
   const [accountName, setAccountName] = useState('P-Burns Enterprise')
   const [accountNumber, setAccountNumber] = useState('1234567890')
   
+  // Mobile Money Details
+  const [momoNumber, setMomoNumber] = useState('')
+  const [momoName, setMomoName] = useState('')
+  const [momoNetwork, setMomoNetwork] = useState('MTN')
+  
   // Terms
   const [terms, setTerms] = useState('Payment is due within 30 days.')
   
@@ -116,6 +121,9 @@ export default function SettingsPage() {
           setBankName(data.bankName || '');
           setAccountName(data.accountName || '');
           setAccountNumber(data.accountNumber || '');
+          setMomoNumber(data.momoNumber || '');
+          setMomoName(data.momoName || '');
+          setMomoNetwork(data.momoNetwork || 'MTN');
           setTerms(data.terms || '');
           setTiktokUrl(data.tiktokUrl || '');
           setInstagramUrl(data.instagramUrl || '');
@@ -218,7 +226,9 @@ export default function SettingsPage() {
       
       // Save general settings
       await setDoc(doc(db, "settings", "general"), {
-        phone, email, address, bankName, accountName, accountNumber, terms,
+        phone, email, address, bankName, accountName, accountNumber,
+        momoNumber, momoName, momoNetwork,
+        terms,
         tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
         paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
         updatedAt: new Date().toISOString()
@@ -529,6 +539,44 @@ export default function SettingsPage() {
                     onChange={(e) => setAccountNumber(e.target.value)} 
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                   />
+                </div>
+              </div>
+              {/* Mobile Money */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Mobile Money Details</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">MoMo Number</label>
+                    <input 
+                      type="text" 
+                      value={momoNumber} 
+                      onChange={(e) => setMomoNumber(e.target.value)} 
+                      placeholder="e.g. 0551234567"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Account Name</label>
+                    <input 
+                      type="text" 
+                      value={momoName} 
+                      onChange={(e) => setMomoName(e.target.value)} 
+                      placeholder="e.g. P-Burns Enterprise"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Network</label>
+                    <select 
+                      value={momoNetwork} 
+                      onChange={(e) => setMomoNetwork(e.target.value)} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm"
+                    >
+                      <option value="MTN">MTN MoMo</option>
+                      <option value="Vodafone">Vodafone Cash</option>
+                      <option value="AirtelTigo">AirtelTigo Money</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               <div>

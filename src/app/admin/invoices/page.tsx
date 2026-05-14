@@ -192,37 +192,37 @@ export default function InvoicesPage() {
     const element = document.getElementById('invoice-paper');
     if (!element || !selectedInvoice) return;
     
-    showToast("Generating PDF...");
+    showToast("Opening print dialog...");
     
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
-      const data = canvas.toDataURL('image/png');
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: 'a4'
-      });
-      
-      const imgProperties = pdf.getImageProperties(data);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
-      
-      pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      
-      pdf.save(`${selectedInvoice.type || 'document'}-${selectedInvoice.invoiceNumber}.pdf`);
-      showToast("PDF downloaded successfully!");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      showToast("Error generating PDF", "error");
+    // Open a new window with just the invoice content and trigger print
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showToast("Please allow popups to download PDF", "error");
+      return;
     }
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice ${selectedInvoice.invoiceNumber}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Georgia, serif; color: #111111; background: #fff; }
+            @page { margin: 15mm; size: A4; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>${element.outerHTML}</body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
   };
 
   const handleConvertInvoice = async () => {
@@ -551,17 +551,31 @@ export default function InvoicesPage() {
                 </div>
 
                 {/* Bank Details */}
-                <div className="border-t border-gray-100 pt-6 mt-6">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Bank Details</h4>
-                  {settings ? (
-                    <>
-                      <p className="text-xs text-gray-700 font-bold">Bank: {settings.bankName || 'GCB Bank'}</p>
-                      <p className="text-xs text-gray-700">Account Name: {settings.accountName || 'P-Burns Enterprise'}</p>
-                      <p className="text-xs text-gray-700">Account Number: {settings.accountNumber || '1234567890123'}</p>
-                    </>
-                  ) : (
-                    <p className="text-xs text-gray-500">Loading bank details...</p>
-                  )}
+                <div className="border-t border-gray-100 pt-6 mt-4 grid grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Bank Transfer</h4>
+                    {settings ? (
+                      <>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Bank:</span> {settings.bankName || 'GCB Bank'}</p>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Account Name:</span> {settings.accountName || 'P-Burns Enterprise'}</p>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Account Number:</span> {settings.accountNumber || 'N/A'}</p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-gray-500">Loading...</p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">📱 Mobile Money</h4>
+                    {settings && settings.momoNumber ? (
+                      <>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Network:</span> {settings.momoNetwork || 'MTN'}</p>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Number:</span> {settings.momoNumber}</p>
+                        <p className="text-xs text-gray-700"><span className="font-bold">Name:</span> {settings.momoName || 'P-Burns Enterprise'}</p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-gray-400">No MoMo details set</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

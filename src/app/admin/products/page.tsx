@@ -19,6 +19,8 @@ export default function ProductsPage() {
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState('draft')
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
+  const [categories, setCategories] = useState<any[]>([])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   
@@ -49,6 +51,14 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    // Also fetch categories for the add product form
+    const fetchCategories = async () => {
+      try {
+        const snap = await getDocs(collection(db, "categories"));
+        setCategories(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch {}
+    };
+    fetchCategories();
   }, []);
 
   const handleSeed = async () => {
@@ -126,6 +136,7 @@ export default function ProductsPage() {
       setCategory('');
       setStatus('draft');
       setImageFile(null);
+      setImagePreview('');
       
       // Refresh list
       fetchProducts();
@@ -302,9 +313,13 @@ export default function ProductsPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
                 >
                   <option value="">Select a category</option>
-                  <option value="ceramics">Ceramics</option>
-                  <option value="doors">Doors</option>
-                  <option value="home_items">Home Items</option>
+                  {(categories.length > 0 ? categories : [
+                    { id: 'ceramics', name: 'Ceramics' },
+                    { id: 'doors', name: 'Doors' },
+                    { id: 'home_items', name: 'Home Items' },
+                  ]).map((cat: any) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -323,10 +338,19 @@ export default function ProductsPage() {
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Product Image</label>
+                {imagePreview && (
+                  <div className="w-full h-32 bg-gray-50 border border-gray-100 rounded-lg overflow-hidden relative mb-2">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                  </div>
+                )}
                 <input 
                   type="file" 
                   accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    setImageFile(f);
+                    if (f) setImagePreview(URL.createObjectURL(f));
+                  }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                 />
                 {imageFile && (
