@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 
@@ -28,7 +29,7 @@ export default function AdminDashboard() {
 
         const productsSnapshot = await getDocs(collection(db, "products"));
         const products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const lowStock = products.filter(p => (typeof p.stock === 'number' ? p.stock : parseInt(p.stock || 0)) < 10);
+        const lowStock = products.filter(p => (typeof (p as any).stock === 'number' ? (p as any).stock : parseInt((p as any).stock || 0)) < 10);
         setLowStockProducts(lowStock);
 
         setRecentOrders(orders.slice(0, 5));

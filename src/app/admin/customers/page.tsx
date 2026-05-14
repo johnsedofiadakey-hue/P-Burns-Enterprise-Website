@@ -38,7 +38,7 @@ export default function CustomersPage() {
       const orders = ordersSnapshot.docs.map(doc => doc.data());
 
       const enrichedCustomers = fetchedCustomers.map(customer => {
-        const customerOrders = orders.filter(order => order.customerId === customer.id || order.customer === customer.name);
+        const customerOrders = orders.filter(order => order.customerId === customer.id || order.customer === (customer as any).name);
         const totalOrders = customerOrders.length;
         const totalSpent = customerOrders.reduce((acc, order) => acc + (typeof order.total === 'number' ? order.total : parseFloat(order.total || 0)), 0);
         return {

@@ -278,6 +278,7 @@ export default function ServicesPage() {
             </div>
           </form>
         </div>
+      </div>
       {/* Slide-in Modal for Edit Service */}
       <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300 ${showEditModal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className={`absolute top-0 right-0 w-full max-w-md h-full bg-white shadow-2xl transform transition-transform duration-300 ease-out ${showEditModal ? 'translate-x-0' : 'translate-x-full'}`}>
