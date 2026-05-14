@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
+import { db, auth } from '@/lib/firebase'
 import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { sendPasswordResetEmail } from 'firebase/auth'
 import Link from 'next/link'
 
 export default function UsersPage() {
@@ -14,6 +15,7 @@ export default function UsersPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('staff')
+  const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   
@@ -59,16 +61,51 @@ export default function UsersPage() {
     }
   };
 
+  const handleResetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showToast(`Password reset email sent to ${email}!`);
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+      showToast(`Error: ${error.message}`, "error");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     
     try {
+      if (password.length < 6) {
+        showToast("Password must be at least 6 characters long", "error");
+        setSaving(false);
+        return;
+      }
+
+      // Create user in Firebase Auth via REST API
+      const apiKey = "AIzaSyA1wO6sb5ovqIUQTawbjSavmCj9cxKUkBc";
+      const authRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: false
+        })
+      });
+
+      const authData = await authRes.json();
+      
+      if (!authRes.ok) {
+        throw new Error(authData.error?.message || "Failed to create authentication account");
+      }
+
       const docData = {
         name,
         email,
         role,
         permissions: selectedPermissions,
+        uid: authData.localId,
         createdAt: new Date().toISOString()
       };
       
@@ -158,6 +195,12 @@ export default function UsersPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
                   <Link href={`/admin/users/${user.id}/edit`} className="text-gold-600 hover:text-gold-900 font-bold mr-4">Edit</Link>
                   <button 
+                    onClick={() => handleResetPassword(user.email)}
+                    className="text-blue-600 hover:text-blue-900 font-bold mr-4"
+                  >
+                    Reset
+                  </button>
+                  <button 
                     onClick={() => handleDelete(user.id)}
                     className="text-red-600 hover:text-red-900 font-bold"
                   >
@@ -213,6 +256,18 @@ export default function UsersPage() {
                   required 
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                   placeholder="e.g. staff@pburns.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Password</label>
+                <input 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="Minimum 6 characters"
                 />
               </div>
 
