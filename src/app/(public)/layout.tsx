@@ -2,6 +2,7 @@ import Link from 'next/link'
 import fs from 'fs'
 import path from 'path'
 import Image from 'next/image'
+import CartIcon from '@/components/CartIcon'
 
 import { db } from '@/lib/firebase'
 import { doc, getDocFromServer } from 'firebase/firestore'
@@ -84,9 +85,7 @@ export default async function PublicLayout({
             </nav>
             <div className="flex items-center space-x-6">
               <Link href="/admin" className="text-sm font-bold uppercase tracking-wider text-gray-600 hover:text-[#111111] transition-colors">Admin</Link>
-              <Link href="/cart" className="relative p-2 text-[#111111] hover:text-gold-600 transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z"></path></svg>
-              </Link>
+              <CartIcon />
             </div>
           </div>
         </div>

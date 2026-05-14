@@ -160,6 +160,7 @@ export default function ShopPage() {
                             cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1, image: product.image })
                           }
                           localStorage.setItem('cart', JSON.stringify(cart))
+                          window.dispatchEvent(new Event('cart-updated'))
                           alert(`Added ${product.name} to cart!`)
                         }}
                         className="text-xs font-bold uppercase tracking-wider text-charcoal-950 hover:text-gold-600 transition-colors"

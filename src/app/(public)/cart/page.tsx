@@ -25,6 +25,7 @@ export default function CartPage() {
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('cart', JSON.stringify(cartItems))
+      window.dispatchEvent(new Event('cart-updated'))
     }
   }, [cartItems, isMounted])
 
