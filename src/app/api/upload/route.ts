@@ -49,9 +49,10 @@ export async function POST(request: NextRequest) {
       },
     });
     
-    // Make public and get URL
-    await fileRef.makePublic();
-    const publicUrl = `https://storage.googleapis.com/p-burnsenterprise.firebasestorage.app/${fileName}`;
+    // We do NOT use makePublic() because new Firebase buckets have Uniform Bucket-Level Access enabled.
+    // Instead, we construct the standard Firebase Storage download URL format.
+    const encodedFileName = encodeURIComponent(fileName);
+    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/p-burnsenterprise.firebasestorage.app/o/${encodedFileName}?alt=media`;
     
     return NextResponse.json({ url: publicUrl });
   } catch (error: any) {
