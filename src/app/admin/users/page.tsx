@@ -233,7 +233,7 @@ export default function UsersPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Feature Access</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {['Dashboard', 'Products', 'Orders', 'Invoices', 'Customers', 'Reports', 'Settings'].map(feature => (
+                  {['Dashboard', 'Products', 'Orders', 'Invoices', 'Customers', 'Reports', 'Settings', 'Payroll'].map(feature => (
                     <label key={feature} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                       <input 
                         type="checkbox"

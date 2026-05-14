@@ -9,10 +9,28 @@ export default function Sidebar({ email }: { email?: string | null }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const [permissions, setPermissions] = useState<string[]>([])
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    
+    const fetchPermissions = async () => {
+      if (!email) return;
+      try {
+        const { db } = await import('@/lib/firebase');
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          setPermissions(userData.permissions || []);
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };
+    fetchPermissions();
+  }, [email]);
 
   if (!mounted) return null
 
@@ -64,6 +82,11 @@ export default function Sidebar({ email }: { email?: string | null }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12a3 3 0 110-6 3 3 0 010 6zm0 0v6m0 0v6" />
       </svg>
     ), category: 'Finance' },
+    { href: '/admin/payroll', label: 'Payroll', icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ), category: 'Finance' },
     
     { href: '/admin/customers', label: 'Customers', icon: (
       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,6 +116,24 @@ export default function Sidebar({ email }: { email?: string | null }) {
     ), category: 'Management' },
   ]
 
+  const filteredLinks = links.filter(link => {
+    if (permissions.length === 0) return true; // Fallback or assume all
+    
+    const label = link.label.toLowerCase();
+    
+    if (label === 'dashboard' && permissions.includes('dashboard')) return true;
+    if ((label === 'products' || label === 'categories') && permissions.includes('products')) return true;
+    if ((label === 'orders' || label === 'pre-orders') && permissions.includes('orders')) return true;
+    if (label === 'invoices' && permissions.includes('invoices')) return true;
+    if (label === 'customers' && permissions.includes('customers')) return true;
+    if (label === 'reports' && permissions.includes('reports')) return true;
+    if ((label === 'settings' || label === 'users') && permissions.includes('settings')) return true;
+    if (label === 'payroll' && permissions.includes('payroll')) return true;
+    if (label === 'bookkeeping' && permissions.includes('invoices')) return true;
+    
+    return false;
+  });
+
   const categories = ['Operations', 'Finance', 'Management']
 
   return (
@@ -116,7 +157,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
             <div key={category}>
               <h3 className="text-xs uppercase tracking-widest text-gray-500 font-bold mb-2 px-4">{category}</h3>
               <div className="space-y-1">
-                {links.filter(link => link.category === category).map(link => (
+                {filteredLinks.filter(link => link.category === category).map(link => (
                   <Link 
                     key={link.href}
                     href={link.href}
