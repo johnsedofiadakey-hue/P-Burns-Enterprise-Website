@@ -14,14 +14,17 @@ const cormorantGaramond = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://pburns.com'),
-  title: "P-Burns Enterprise - Premium Ceramics & Doors",
-  description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.",
-  keywords: ["ceramics", "doors", "tiles", "building materials", "Ghana", "construction", "pre-order"],
+  metadataBase: new URL('https://pburns-app--p-burnsenterprise.us-east4.hosted.app'),
+  title: "P-Burns Enterprise - Premium Ceramics & Doors in Sefwi Dwinase & Kumasi",
+  description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors. Serving Sefwi Dwinase, Western North Region and Kumasi.",
+  keywords: ["ceramics", "doors", "tiles", "building materials", "Ghana", "construction", "pre-order", "Sefwi Dwinase", "Kumasi", "Western North Region"],
+  icons: {
+    icon: '/logo_high_quality.png',
+  },
   openGraph: {
-    title: "P-Burns Enterprise - Premium Ceramics & Doors",
+    title: "P-Burns Enterprise - Premium Ceramics & Doors in Sefwi Dwinase & Kumasi",
     description: "Ghana's premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.",
-    url: "https://pburns.com",
+    url: "https://pburns-app--p-burnsenterprise.us-east4.hosted.app",
     siteName: "P-Burns Enterprise",
     images: [
       {
