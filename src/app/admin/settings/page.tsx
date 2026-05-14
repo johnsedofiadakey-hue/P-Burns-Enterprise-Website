@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState('+233 123 456 789')
   const [email, setEmail] = useState('info@pburns.com')
   const [address, setAddress] = useState('Sefwi Dwinase, Western North Region')
+  const [paystackPublicKey, setPaystackPublicKey] = useState('')
   
   // Bank Details
   const [bankName, setBankName] = useState('GT Bank')
@@ -117,6 +118,7 @@ export default function SettingsPage() {
           setInstagramUrl(data.instagramUrl || '');
           setFacebookUrl(data.facebookUrl || '');
           setWhatsappUrl(data.whatsappUrl || '');
+          setPaystackPublicKey(data.paystackPublicKey || '');
         }
         
         if (themeSnap.exists()) {
@@ -212,6 +214,7 @@ export default function SettingsPage() {
       await setDoc(doc(db, "settings", "general"), {
         phone, email, address, bankName, accountName, accountNumber, terms,
         tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
+        paystackPublicKey,
         updatedAt: new Date().toISOString()
       });
       
@@ -379,6 +382,18 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Paystack Public Key</label>
+                <input 
+                  type="text" 
+                  value={paystackPublicKey} 
+                  onChange={(e) => setPaystackPublicKey(e.target.value)} 
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                  placeholder="pk_live_..."
+                />
+                <p className="text-xs text-gray-500 mt-1">Paste your Paystack Public Key here.</p>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Address</label>
