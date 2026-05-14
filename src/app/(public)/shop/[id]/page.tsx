@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore'
 
 // Mock data
 const mockProducts = [
@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null)
   const [quantity, setQuantity] = useState(1)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,6 +47,31 @@ export default function ProductDetailPage() {
       fetchProduct();
     }
   }, [id, router])
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      if (!product?.category) return;
+      try {
+        const q = query(
+          collection(db, "products"),
+          where("category", "==", product.category),
+          where("status", "==", "published"),
+          limit(5)
+        );
+        const querySnapshot = await getDocs(q);
+        const products: any[] = [];
+        querySnapshot.forEach((doc) => {
+          if (doc.id !== product.id) {
+            products.push({ id: doc.id, ...doc.data() });
+          }
+        });
+        setRelatedProducts(products.slice(0, 4)); // Limit to 4
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+      }
+    };
+    fetchRelatedProducts();
+  }, [product])
 
   if (!product) {
     return <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-500">Loading...</div>
@@ -161,6 +187,32 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </div>
+          
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-24">
+              <h2 className="text-2xl font-black text-charcoal-950 uppercase tracking-tight mb-8">You May Also Like</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {relatedProducts.map((p) => (
+                  <Link href={`/shop/${p.id}`} key={p.id} className="group">
+                    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                      <div className="relative h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+                        {p.image ? (
+                          <Image src={p.image} alt={p.name} fill className="object-cover group-hover:scale-105 transition-all duration-500" unoptimized />
+                        ) : (
+                          <svg className="w-12 h-12 text-gold-500/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-sm font-bold text-charcoal-950 uppercase tracking-tight group-hover:text-gold-600 transition-colors truncate">{p.name}</h3>
+                        <p className="text-sm font-black text-charcoal-950 mt-1">GH₵ {p.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
