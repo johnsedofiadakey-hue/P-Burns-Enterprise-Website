@@ -27,6 +27,10 @@ export default function CheckoutPage() {
   const total = subtotal + deliveryFee
 
   const handlePaystackPayment = () => {
+    if (!(window as any).PaystackPop) {
+      alert('Payment system is still loading. Please try again in a moment.');
+      return;
+    }
     const handler = (window as any).PaystackPop.setup({
       key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_placeholder',
       email: email,

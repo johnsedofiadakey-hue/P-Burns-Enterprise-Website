@@ -5,7 +5,7 @@ import { doc, getDocFromServer } from 'firebase/firestore';
 
 export default async function ProjectsPage() {
   let projects = [
-    { id: '1', title: 'Luxury Hotel Accra', desc: 'Premium ceramic tiling for the entire lobby and suites.', image: '/category_ceramics.png' },
+    { id: '1', title: 'Luxury Hotel Sefwi Dwinase', desc: 'Premium ceramic tiling for the entire lobby and suites.', image: '/category_ceramics.png' },
     { id: '2', title: 'Private Mansion Kumasi', desc: 'Custom imported security doors and window fixtures.', image: '/category_doors.png' },
     { id: '3', title: 'Corporate Office Ridge', desc: 'Modern glass partitions and accessories.', image: '/category_home_items.png' },
   ];

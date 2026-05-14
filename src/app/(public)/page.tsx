@@ -26,7 +26,7 @@ export default async function Home() {
   // Default testimonials
   let testimonials = {
     t1Name: 'Kofi Annan',
-    t1Role: 'Project Manager, Accra',
+    t1Role: 'Project Manager, Sefwi Dwinase',
     t1Quote: '"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."',
     t2Name: 'Ama Serwaa',
     t2Role: 'Home Owner, Kumasi',

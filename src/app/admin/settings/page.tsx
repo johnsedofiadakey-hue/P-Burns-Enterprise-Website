@@ -12,7 +12,7 @@ export default function SettingsPage() {
   // Company Info
   const [phone, setPhone] = useState('+233 123 456 789')
   const [email, setEmail] = useState('info@pburns.com')
-  const [address, setAddress] = useState('123 Street, Accra, Ghana')
+  const [address, setAddress] = useState('Sefwi Dwinase, Western North Region')
   
   // Bank Details
   const [bankName, setBankName] = useState('GT Bank')
