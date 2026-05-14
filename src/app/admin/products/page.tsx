@@ -109,9 +109,22 @@ export default function ProductsPage() {
       
       if (imageFile) {
         setUploading(true);
-        const storageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('folder', 'products');
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Image upload failed');
+        }
+        
+        const data = await response.json();
+        imageUrl = data.url;
         setUploading(false);
       }
       

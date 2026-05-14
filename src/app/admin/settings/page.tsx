@@ -202,11 +202,23 @@ export default function SettingsPage() {
     
     setUploading(true);
     try {
-      const storageRef = ref(storage, `branding/logo_${Date.now()}`);
-      const snapshot = await uploadBytes(storageRef, logoFile);
-      const url = await getDownloadURL(snapshot.ref);
-      setLogoUrl(url);
-      return url;
+      const formData = new FormData();
+      formData.append('file', logoFile);
+      formData.append('folder', 'branding');
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Logo upload failed');
+      }
+      
+      const data = await response.json();
+      setLogoUrl(data.url);
+      return data.url;
     } catch (error: any) {
       console.error("Error uploading logo:", error);
       showToast("Error uploading logo: " + error.message, "error");
