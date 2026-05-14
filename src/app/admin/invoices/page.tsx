@@ -20,6 +20,9 @@ export default function InvoicesPage() {
   const [docType, setDocType] = useState('invoice') // invoice, quote, receipt, refund
   const [status, setStatus] = useState('draft') // draft, paid, partial, unpaid
   const [customer, setCustomer] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [customerAddress, setCustomerAddress] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [items, setItems] = useState([{ name: '', quantity: 1, rate: 0 }])
   const [notes, setNotes] = useState('Thanks for your business.')
@@ -30,6 +33,12 @@ export default function InvoicesPage() {
   // Toast State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [settings, setSettings] = useState<any>(null)
+
+  const formatMoney = (amount: number | string) => {
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(num)) return '0.00';
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -109,7 +118,7 @@ export default function InvoicesPage() {
     const subTotal = items.reduce((acc, item) => acc + (item.quantity * item.rate), 0);
     const discountAmount = subTotal * (discount / 100);
     const afterDiscount = subTotal - discountAmount;
-    const taxAmount = applyTax ? afterDiscount * 0.15 : 0; // 15% VAT
+    const taxAmount = applyTax ? afterDiscount * ((settings?.taxPercentage ?? 15) / 100) : 0;
     return afterDiscount + taxAmount;
   };
 
@@ -124,6 +133,9 @@ export default function InvoicesPage() {
       const docData = {
         invoiceNumber: docNumber,
         customer,
+        customerEmail,
+        customerPhone,
+        customerAddress,
         date,
         items,
         total,
@@ -147,6 +159,9 @@ export default function InvoicesPage() {
       setIsEditing(false);
       // Reset form
       setCustomer('');
+      setCustomerEmail('');
+      setCustomerPhone('');
+      setCustomerAddress('');
       setItems([{ name: '', quantity: 1, rate: 0 }]);
       setNotes('Thanks for your business.');
       
@@ -166,6 +181,9 @@ export default function InvoicesPage() {
     setDocType(selectedInvoice.type || 'invoice');
     setStatus(selectedInvoice.status || 'draft');
     setCustomer(selectedInvoice.customer || '');
+    setCustomerEmail(selectedInvoice.customerEmail || '');
+    setCustomerPhone(selectedInvoice.customerPhone || '');
+    setCustomerAddress(selectedInvoice.customerAddress || '');
     setDate(selectedInvoice.date || '');
     setItems(selectedInvoice.items || [{ name: '', quantity: 1, rate: 0 }]);
     setNotes(selectedInvoice.notes || 'Thanks for your business.');
@@ -212,8 +230,11 @@ export default function InvoicesPage() {
           <title>Invoice ${selectedInvoice.invoiceNumber}</title>
           ${styles}
           <style>
-            @page { margin: 15mm; size: A4; }
-            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            @page { margin: 10mm; size: A4; }
+            @media print { 
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              #invoice-paper { box-shadow: none !important; border: none !important; margin: 0 !important; max-width: 100% !important; }
+            }
           </style>
         </head>
         <body style="background: white;">${element.outerHTML}</body>
@@ -348,7 +369,7 @@ export default function InvoicesPage() {
                   >
                     <div className="flex justify-between items-start mb-1">
                       <span className="font-bold text-[#111111]">{invoice.customer || 'Unknown Customer'}</span>
-                      <span className="font-bold text-gold-600">GH₵ {typeof invoice.total === 'number' ? invoice.total.toFixed(2) : invoice.total}</span>
+                      <span className="font-bold text-gold-600">GH₵ {formatMoney(invoice.total)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs text-gray-700">
                       <span>{invoice.invoiceNumber} • {invoice.date}</span>
@@ -464,12 +485,13 @@ export default function InvoicesPage() {
                 <div className="flex justify-between mb-12">
                   <div>
                     <div className="mb-2">
-                      <Image src="/logo-transparent.png" alt="P-Burns Logo" width={120} height={40} className="object-contain" unoptimized />
+                      <Image src="/logo-transparent.png" alt="P-Burns Logo" width={200} height={67} className="object-contain" unoptimized />
                     </div>
-                    <div className="text-xs text-gray-700 mt-2">
-                      <p>Sefwi Dwirase Western North</p>
-                      <p>Ghana</p>
-                      <p>0537749190</p>
+                    <div className="text-xs font-bold text-[#111111] mt-2">
+                      <p>{settings?.address || 'Sefwi Dwirase Western North'}</p>
+                      <p>{settings?.phone || '0537749190'}</p>
+                      <p>{settings?.email || 'info@pburns.com'}</p>
+                      <p>www.pburns.com</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -486,6 +508,9 @@ export default function InvoicesPage() {
                 <div className="mb-12">
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Bill To</h3>
                   <p className="text-lg font-bold text-[#111111]">{selectedInvoice.customer}</p>
+                  {selectedInvoice.customerEmail && <p className="text-sm text-gray-700">{selectedInvoice.customerEmail}</p>}
+                  {selectedInvoice.customerPhone && <p className="text-sm text-gray-700">{selectedInvoice.customerPhone}</p>}
+                  {selectedInvoice.customerAddress && <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedInvoice.customerAddress}</p>}
                 </div>
 
                 {/* Table */}
@@ -506,16 +531,16 @@ export default function InvoicesPage() {
                           <td className="px-6 py-4">{index + 1}</td>
                           <td className="px-6 py-4 font-medium text-[#111111]">{item.name}</td>
                           <td className="px-6 py-4 text-right">{item.quantity}</td>
-                          <td className="px-6 py-4 text-right">GH₵ {typeof item.rate === 'number' ? item.rate.toFixed(2) : item.rate}</td>
-                          <td className="px-6 py-4 text-right font-bold text-[#111111]">GH₵ {(item.quantity * item.rate).toFixed(2)}</td>
+                          <td className="px-6 py-4 text-right">GH₵ {formatMoney(item.rate)}</td>
+                          <td className="px-6 py-4 text-right font-bold text-[#111111]">GH₵ {formatMoney(item.quantity * item.rate)}</td>
                         </tr>
                       )) : (
                         <tr className="text-sm text-gray-700">
                           <td className="px-6 py-4">1</td>
                           <td className="px-6 py-4 font-medium text-[#111111]">Product / Service from Order</td>
                           <td className="px-6 py-4 text-right">1.00</td>
-                          <td className="px-6 py-4 text-right">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</td>
-                          <td className="px-6 py-4 text-right font-bold text-[#111111]">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</td>
+                          <td className="px-6 py-4 text-right">GH₵ {formatMoney(selectedInvoice.total)}</td>
+                          <td className="px-6 py-4 text-right font-bold text-[#111111]">GH₵ {formatMoney(selectedInvoice.total)}</td>
                         </tr>
                       )}
                     </tbody>
@@ -529,33 +554,33 @@ export default function InvoicesPage() {
                       <span>Sub Total</span>
                       <span className="font-bold text-[#111111]">GH₵ {
                         selectedInvoice.items ? 
-                        selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0).toFixed(2) : 
-                        parseFloat(selectedInvoice.total).toFixed(2)
+                        formatMoney(selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0)) : 
+                        formatMoney(selectedInvoice.total)
                       }</span>
                     </div>
                     {selectedInvoice.discount > 0 && (
                       <div className="flex justify-between text-gray-800">
                         <span>Discount ({selectedInvoice.discount}%)</span>
                         <span className="font-bold text-red-600">-GH₵ {
-                          (selectedInvoice.items ? 
+                          formatMoney(selectedInvoice.items ? 
                           selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0) * (selectedInvoice.discount / 100) : 
-                          0).toFixed(2)
+                          0)
                         }</span>
                       </div>
                     )}
                     {selectedInvoice.applyTax && (
                       <div className="flex justify-between text-gray-800">
-                        <span>VAT (15%)</span>
+                        <span>VAT ({settings?.taxPercentage ?? 15}%)</span>
                         <span className="font-bold text-[#111111]">GH₵ {
-                          ((selectedInvoice.items ? 
+                          formatMoney(((selectedInvoice.items ? 
                           selectedInvoice.items.reduce((acc: number, item: any) => acc + (item.quantity * item.rate), 0) * (1 - (selectedInvoice.discount || 0) / 100) : 
-                          parseFloat(selectedInvoice.total)) * 0.15).toFixed(2)
+                          parseFloat(selectedInvoice.total)) * ((settings?.taxPercentage ?? 15) / 100)))
                         }</span>
                       </div>
                     )}
                     <div className="flex justify-between text-lg font-serif font-bold border-t border-gray-100 pt-2">
                       <span className="text-[#111111]">Total</span>
-                      <span className="text-gold-600">GH₵ {typeof selectedInvoice.total === 'number' ? selectedInvoice.total.toFixed(2) : selectedInvoice.total}</span>
+                      <span className="text-gold-600">GH₵ {formatMoney(selectedInvoice.total)}</span>
                     </div>
                     <div className="flex justify-between text-sm bg-gray-50 p-2 font-bold text-[#111111]">
                       <span>Balance Due</span>
@@ -679,6 +704,39 @@ export default function InvoicesPage() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Customer Email</label>
+                <input 
+                  type="email" 
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="e.g. john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Customer Contact</label>
+                <input 
+                  type="text" 
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="e.g. 0551234567"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Customer Address</label>
+                <textarea 
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  rows={2}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                  placeholder="e.g. House No. 123, Accra"
+                />
+              </div>
+
               {/* Items Table */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Items</label>
@@ -753,7 +811,7 @@ export default function InvoicesPage() {
                       onChange={(e) => setApplyTax(e.target.checked)}
                       className="w-5 h-5 text-gold-500 border-gray-200 rounded focus:ring-gold-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Add 15% VAT</span>
+                    <span className="ml-2 text-sm text-gray-700">Add {settings?.taxPercentage ?? 15}% VAT</span>
                   </div>
                 </div>
               </div>
@@ -772,7 +830,7 @@ export default function InvoicesPage() {
               {/* Total Preview */}
               <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
                 <span className="text-sm font-bold text-gray-800 uppercase tracking-widest">Estimated Total:</span>
-                <span className="text-xl font-serif font-bold text-gold-600">GH₵ {calculateTotal().toFixed(2)}</span>
+                <span className="text-xl font-serif font-bold text-gold-600">GH₵ {formatMoney(calculateTotal())}</span>
               </div>
             </form>
             

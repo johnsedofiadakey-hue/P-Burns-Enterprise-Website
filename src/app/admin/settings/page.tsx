@@ -31,6 +31,14 @@ export default function SettingsPage() {
   // Terms
   const [terms, setTerms] = useState('Payment is due within 30 days.')
   
+  // Tax Settings
+  const [taxPercentage, setTaxPercentage] = useState(15)
+  const [isTaxEnabled, setIsTaxEnabled] = useState(false)
+  
+  // Checkout Settings
+  const [deliveryFee, setDeliveryFee] = useState(50.00)
+  const [whatsappNumber, setWhatsappNumber] = useState('+233123456789')
+  
   // Social Media
   const [tiktokUrl, setTiktokUrl] = useState('')
   const [instagramUrl, setInstagramUrl] = useState('')
@@ -127,6 +135,10 @@ export default function SettingsPage() {
           setTerms(data.terms || '');
           setTiktokUrl(data.tiktokUrl || '');
           setInstagramUrl(data.instagramUrl || '');
+          setTaxPercentage(data.taxPercentage ?? 15);
+          setIsTaxEnabled(data.isTaxEnabled ?? false);
+          setDeliveryFee(data.deliveryFee ?? 50.00);
+          setWhatsappNumber(data.whatsappNumber || '+233123456789');
           setFacebookUrl(data.facebookUrl || '');
           setWhatsappUrl(data.whatsappUrl || '');
           setPaystackPublicKey(data.paystackPublicKey || '');
@@ -243,6 +255,7 @@ export default function SettingsPage() {
         terms,
         tiktokUrl, instagramUrl, facebookUrl, whatsappUrl,
         paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
+        taxPercentage, isTaxEnabled, deliveryFee, whatsappNumber,
         updatedAt: new Date().toISOString()
       });
       
@@ -591,6 +604,58 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+              
+              {/* Tax Settings */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Tax Settings</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      checked={isTaxEnabled} 
+                      onChange={(e) => setIsTaxEnabled(e.target.checked)} 
+                      className="w-5 h-5 text-gold-500 border-gray-200 rounded focus:ring-gold-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Enable Tax on Invoices</span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Tax Percentage (%)</label>
+                    <input 
+                      type="number" 
+                      value={taxPercentage} 
+                      onChange={(e) => setTaxPercentage(parseFloat(e.target.value))} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Checkout Settings */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Checkout Settings</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Default Delivery Fee (GH₵)</label>
+                    <input 
+                      type="number" 
+                      value={deliveryFee} 
+                      onChange={(e) => setDeliveryFee(parseFloat(e.target.value))} 
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">WhatsApp Number (with country code)</label>
+                    <input 
+                      type="text" 
+                      value={whatsappNumber} 
+                      onChange={(e) => setWhatsappNumber(e.target.value)} 
+                      placeholder="e.g. +233123456789"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm" 
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Invoice Terms & Conditions</label>
                 <textarea 

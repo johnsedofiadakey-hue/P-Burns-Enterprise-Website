@@ -16,6 +16,8 @@ export default function CheckoutPage() {
   const router = useRouter()
 
   const [paystackKey, setPaystackKey] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(50.00)
+  const [whatsappNumber, setWhatsappNumber] = useState('+233123456789')
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart')
@@ -27,7 +29,10 @@ export default function CheckoutPage() {
       try {
         const settingsSnap = await getDoc(doc(db, "settings", "general"));
         if (settingsSnap.exists()) {
-          setPaystackKey(settingsSnap.data().paystackPublicKey || '');
+          const data = settingsSnap.data();
+          setPaystackKey(data.paystackPublicKey || '');
+          setDeliveryFee(data.deliveryFee ?? 50.00);
+          setWhatsappNumber(data.whatsappNumber || '+233123456789');
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -37,7 +42,6 @@ export default function CheckoutPage() {
   }, [])
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-  const deliveryFee = 50.00
   const total = subtotal + deliveryFee
 
   const handlePaystackPayment = () => {
@@ -115,7 +119,7 @@ export default function CheckoutPage() {
       const message = `Hello, I want to place an order.\n\n*Order No:* ${orderNumber}\n*Name:* ${name}\n*Items:* ${itemsText}\n*Total:* GH₵ ${total.toFixed(2)}\n\nPlease process my order.`
       
       const encodedMessage = encodeURIComponent(message)
-      const whatsappUrl = `https://wa.me/+233123456789?text=${encodedMessage}`
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
       
       localStorage.removeItem('cart')
       window.dispatchEvent(new Event('cart-updated'))

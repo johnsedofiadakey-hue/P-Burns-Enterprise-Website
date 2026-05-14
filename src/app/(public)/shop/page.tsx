@@ -131,7 +131,7 @@ export default function ShopPage() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product: any) => (
                 <div key={product.id} className="bg-white rounded-2xl shadow-xl shadow-charcoal-900/5 hover:-translate-y-2 transition-all duration-500 border border-gray-100 overflow-hidden group">
                   <Link href={`/shop/${product.id}`}>
                     <div className="relative h-64 bg-gradient-to-br from-charcoal-900 to-charcoal-950 flex items-center justify-center overflow-hidden">
@@ -153,7 +153,14 @@ export default function ShopPage() {
                       </Link>
                     </h3>
                     <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-50">
-                      <p className="text-lg font-black text-charcoal-950">GH₵ {product.price.toFixed(2)}</p>
+                      <div>
+                        <p className="text-lg font-black text-charcoal-950">GH₵ {product.price.toFixed(2)}</p>
+                        {product.stock !== undefined && (
+                          <p className={`text-xs font-bold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {product.stock > 0 ? `${product.stock} items left` : 'Out of Stock'}
+                          </p>
+                        )}
+                      </div>
                       <button 
                         onClick={(e) => {
                           e.preventDefault()
@@ -169,9 +176,10 @@ export default function ShopPage() {
                           window.dispatchEvent(new Event('cart-updated'))
                           alert(`Added ${product.name} to cart!`)
                         }}
-                        className="text-xs font-bold uppercase tracking-wider text-charcoal-950 hover:text-gold-600 transition-colors"
+                        disabled={product.stock === 0}
+                        className={`text-xs font-bold uppercase tracking-wider transition-colors ${product.stock === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-charcoal-950 hover:text-gold-600'}`}
                       >
-                        Add to Cart
+                        {product.stock === 0 ? 'Sold Out' : 'Add to Cart'}
                       </button>
                     </div>
                   </div>
