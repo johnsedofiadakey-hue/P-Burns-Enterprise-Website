@@ -4,6 +4,7 @@ import path from 'path'
 import Image from 'next/image'
 import CartIcon from '@/components/CartIcon'
 import Header from '@/components/Header'
+import WhatsAppFloat from '@/components/WhatsAppFloat'
 
 import { db } from '@/lib/firebase'
 import { doc, getDocFromServer } from 'firebase/firestore'
@@ -74,6 +75,7 @@ export default async function PublicLayout({
       <main className="flex-1">
         {children}
       </main>
+      <WhatsAppFloat />
 
       {/* Footer */}
       <footer className="bg-[#111111] text-white mt-auto border-t border-[#1A1A1A]">
@@ -122,6 +124,7 @@ export default async function PublicLayout({
                 <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                 <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/track" className="hover:text-white transition-colors">Track Order</Link></li>
                 <li><Link href="/admin" className="hover:text-white transition-colors">Admin Portal</Link></li>
               </ul>
             </div>

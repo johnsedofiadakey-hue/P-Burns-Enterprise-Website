@@ -11,6 +11,7 @@ export default function AdminDashboard() {
     pendingOrders: 0
   })
   const [loading, setLoading] = useState(true)
+  const [lowStockProducts, setLowStockProducts] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -23,6 +24,11 @@ export default function AdminDashboard() {
         const contractsSnapshot = await getDocs(collection(db, "contracts"));
         const contracts = contractsSnapshot.docs.map(doc => doc.data());
         const activeContracts = contracts.filter(c => c.status === 'in_progress' || c.status === 'deposit_paid').length;
+
+        const productsSnapshot = await getDocs(collection(db, "products"));
+        const products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const lowStock = products.filter(p => (typeof p.stock === 'number' ? p.stock : parseInt(p.stock || 0)) < 10);
+        setLowStockProducts(lowStock);
 
         setStats({
           totalSales,
@@ -70,6 +76,30 @@ export default function AdminDashboard() {
           </p>
           <div className="mt-2 text-xs text-gray-700">Awaiting processing</div>
         </div>
+      </div>
+
+      {/* Low Stock Alerts */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <h3 className="text-lg font-serif font-bold text-[#111111] mb-4">Low Stock Alerts</h3>
+        {loading ? (
+          <div className="text-sm text-gray-700">Loading alerts...</div>
+        ) : lowStockProducts.length === 0 ? (
+          <div className="text-sm text-green-600 font-bold">✨ All products are well stocked!</div>
+        ) : (
+          <div className="space-y-3">
+            {lowStockProducts.map(product => (
+              <div key={product.id} className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
+                <div>
+                  <div className="text-sm font-bold text-[#111111]">{product.name}</div>
+                  <div className="text-xs text-gray-500">Category: {product.category}</div>
+                </div>
+                <div className="text-sm font-bold text-red-600">
+                  {product.stock} left
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
     </div>

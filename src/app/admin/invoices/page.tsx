@@ -131,30 +131,92 @@ export default function InvoicesPage() {
   };
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById('invoice-paper');
-    if (!element) return;
-    
+    if (!selectedInvoice) return;
     showToast("Generating PDF...");
     
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2, // High quality
-        useCORS: true // Handle images if any
-      });
-      const data = canvas.toDataURL('image/png');
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
       
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: 'a4'
-      });
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(17, 17, 17);
+      doc.text("P-BURNS ENTERPRISE", 105, 20, { align: 'center' });
       
-      const imgProperties = pdf.getImageProperties(data);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+      doc.setFontSize(14);
+      doc.text(selectedInvoice.type?.toUpperCase() || "INVOICE", 105, 30, { align: 'center' });
       
-      pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${selectedInvoice.type || 'document'}-${selectedInvoice.invoiceNumber}.pdf`);
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Invoice #: ${selectedInvoice.invoiceNumber}`, 105, 35, { align: 'center' });
+      doc.text(`Date: ${selectedInvoice.date}`, 105, 40, { align: 'center' });
+      
+      // Divider
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 45, 190, 45);
+      
+      // Business Details
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Sefwi Dwirase Western North, Ghana", 20, 55);
+      doc.text("0537749190", 20, 60);
+      
+      // Customer Details
+      doc.setFontSize(12);
+      doc.setTextColor(17, 17, 17);
+      doc.text("Bill To:", 20, 75);
+      doc.setFontSize(14);
+      doc.text(selectedInvoice.customer, 20, 82);
+      
+      // Table Header
+      let y = 100;
+      doc.setDrawColor(17, 17, 17);
+      doc.setLineWidth(0.5);
+      doc.line(20, y, 190, y);
+      y += 6;
+      doc.setFontSize(10);
+      doc.text("Item & Description", 20, y);
+      doc.text("Qty", 120, y, { align: 'right' });
+      doc.text("Rate", 150, y, { align: 'right' });
+      doc.text("Amount", 190, y, { align: 'right' });
+      y += 4;
+      doc.line(20, y, 190, y);
+      y += 8;
+      
+      // Table Items
+      doc.setFontSize(10);
+      if (selectedInvoice.items) {
+        selectedInvoice.items.forEach((item: any) => {
+          doc.text(item.name, 20, y);
+          doc.text(item.quantity.toString(), 120, y, { align: 'right' });
+          doc.text(`GH₵ ${parseFloat(item.rate).toFixed(2)}`, 150, y, { align: 'right' });
+          doc.text(`GH₵ ${(item.quantity * item.rate).toFixed(2)}`, 190, y, { align: 'right' });
+          y += 8;
+        });
+      } else {
+        doc.text("Product / Service from Order", 20, y);
+        doc.text("1.00", 120, y, { align: 'right' });
+        doc.text(`GH₵ ${parseFloat(selectedInvoice.total).toFixed(2)}`, 150, y, { align: 'right' });
+        doc.text(`GH₵ ${parseFloat(selectedInvoice.total).toFixed(2)}`, 190, y, { align: 'right' });
+        y += 8;
+      }
+      
+      // Divider
+      doc.line(20, y, 190, y);
+      y += 10;
+      
+      // Totals
+      doc.setFontSize(12);
+      doc.text("Total Amount:", 120, y);
+      doc.text(`GH₵ ${parseFloat(selectedInvoice.total).toFixed(2)}`, 190, y, { align: 'right' });
+      
+      // Footer
+      y += 20;
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Thank you for your business!", 105, y, { align: 'center' });
+      
+      doc.save(`${selectedInvoice.type || 'document'}-${selectedInvoice.invoiceNumber}.pdf`);
       showToast("PDF downloaded successfully!");
     } catch (error) {
       console.error("Error generating PDF:", error);
