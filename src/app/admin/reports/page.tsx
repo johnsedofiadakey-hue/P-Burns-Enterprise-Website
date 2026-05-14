@@ -63,18 +63,6 @@ export default function ReportsPage() {
       last6Months.push(data[idx]);
     }
     
-    const hasData = last6Months.some(d => d.income > 0 || d.expense > 0);
-    if (!hasData) {
-      return [
-        { month: 'Jan', income: 4500, expense: 3000 },
-        { month: 'Feb', income: 5200, expense: 3200 },
-        { month: 'Mar', income: 6100, expense: 4000 },
-        { month: 'Apr', income: 5800, expense: 3800 },
-        { month: 'May', income: 7200, expense: 4500 },
-        { month: 'Jun', income: 8000, expense: 5000 },
-      ];
-    }
-    
     return last6Months;
   };
 

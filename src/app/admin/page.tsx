@@ -93,7 +93,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grid for Charts and Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8">
         {/* Recent Orders */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-4">
@@ -124,34 +124,6 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Top Selling Products */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-lg font-serif font-bold text-[#111111] mb-4">Top Selling Products</h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-1/3 text-sm text-gray-700 truncate">Premium Ceramics</div>
-              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
-                <div className="bg-gold-500 h-full" style={{ width: '80%' }}></div>
-              </div>
-              <div className="text-sm font-bold text-[#111111]">80%</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-1/3 text-sm text-gray-700 truncate">Luxury Doors</div>
-              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
-                <div className="bg-gold-500 h-full" style={{ width: '65%' }}></div>
-              </div>
-              <div className="text-sm font-bold text-[#111111]">65%</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-1/3 text-sm text-gray-700 truncate">Home Items</div>
-              <div className="flex-1 bg-gray-100 h-4 rounded-full overflow-hidden">
-                <div className="bg-gold-500 h-full" style={{ width: '45%' }}></div>
-              </div>
-              <div className="text-sm font-bold text-[#111111]">45%</div>
-            </div>
-          </div>
         </div>
       </div>
 
