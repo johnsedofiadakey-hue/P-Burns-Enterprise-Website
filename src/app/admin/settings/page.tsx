@@ -155,7 +155,6 @@ export default function SettingsPage() {
           setT3Quote(data.t3Quote || '"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."');
         }
 
-        const projectsSnap = await getDoc(doc(db, "settings", "projects"));
         if (projectsSnap.exists()) {
           const data = projectsSnap.data();
           setP1Title(data.p1Title || 'Luxury Hotel Accra');

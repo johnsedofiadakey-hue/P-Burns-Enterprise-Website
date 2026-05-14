@@ -20,7 +20,7 @@ export default async function PublicLayout({
   let settings = { 
     phone: '+233 123 456 789', 
     email: 'info@pburns.com', 
-    address: 'Sefwi, Ghana',
+    address: 'Sefwi Dwinase, Western North Region',
     tiktokUrl: '',
     instagramUrl: '',
     facebookUrl: '',

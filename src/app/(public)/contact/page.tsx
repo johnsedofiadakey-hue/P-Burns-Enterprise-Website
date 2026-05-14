@@ -10,7 +10,7 @@ export default function ContactPage() {
   const [settings, setSettings] = useState({
     phone: '+233 123 456 789',
     email: 'info@pburns.com',
-    address: '123 Street, Accra, Ghana'
+    address: 'Sefwi Dwinase, Western North Region'
   });
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function ContactPage() {
           setSettings({
             phone: data.phone || '+233 123 456 789',
             email: data.email || 'info@pburns.com',
-            address: data.address || '123 Street, Accra, Ghana'
+            address: data.address || 'Sefwi Dwinase, Western North Region'
           });
         }
       } catch (error) {
