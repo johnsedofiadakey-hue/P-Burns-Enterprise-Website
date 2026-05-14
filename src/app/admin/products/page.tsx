@@ -68,10 +68,9 @@ export default function ProductsPage() {
       showToast("Cannot delete: Invalid product ID", "error");
       return;
     }
-    if (typeof window !== 'undefined' && !window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
-    
     try {
       console.log("Attempting to delete product with ID:", id);
+      showToast("Deleting product...");
       await deleteDoc(doc(db, "products", id));
       setProducts(products.filter(p => p.id !== id));
       showToast("Product deleted successfully!");
