@@ -34,6 +34,7 @@ export default async function AboutPage() {
             src="/hero_showroom.png"
             alt="About P-Burns"
             fill
+            sizes="100vw"
             className="object-cover opacity-30"
             priority
           />

@@ -67,6 +67,7 @@ export default async function Home() {
               src="/hero_showroom.png"
               alt="P-Burns Enterprise Showroom"
               fill
+              sizes="100vw"
               className="object-cover opacity-50"
               priority
             />
