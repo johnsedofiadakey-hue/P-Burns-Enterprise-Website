@@ -198,7 +198,13 @@ export default function ProductsPage() {
             ) : products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">{product.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{product.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                  {categories.find((c: any) => c.id === product.category)?.name || 
+                   (product.category === 'ceramics' ? 'Ceramics' : 
+                    product.category === 'doors' ? 'Doors' : 
+                    product.category === 'home_items' ? 'Home Items' : 
+                    product.category)}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">GH₵ {typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{product.stock}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -305,11 +311,7 @@ export default function ProductsPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
                 >
                   <option value="">Select a category</option>
-                  {(categories.length > 0 ? categories : [
-                    { id: 'ceramics', name: 'Ceramics' },
-                    { id: 'doors', name: 'Doors' },
-                    { id: 'home_items', name: 'Home Items' },
-                  ]).map((cat: any) => (
+                  {categories.map((cat: any) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>

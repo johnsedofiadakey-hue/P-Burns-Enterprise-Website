@@ -17,27 +17,39 @@ const initialProducts = [
 
 export default function ShopPage() {
   const [products, setProducts] = useState(initialProducts)
+  const [categories, setCategories] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
 
-  useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "products"));
-        if (!querySnapshot.empty) {
-          const fetchedProducts = querySnapshot.docs.map(doc => ({
+        const [productsSnap, categoriesSnap] = await Promise.all([
+          getDocs(collection(db, "products")),
+          getDocs(collection(db, "categories"))
+        ]);
+        
+        if (!productsSnap.empty) {
+          const fetchedProducts = productsSnap.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
           })) as any[];
           setProducts(fetchedProducts);
         }
+        
+        if (!categoriesSnap.empty) {
+          const fetchedCategories = categoriesSnap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setCategories(fetchedCategories);
+        }
       } catch (error) {
-        console.error("Error fetching products from Firestore:", error);
+        console.error("Error fetching data from Firestore:", error);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, []);
 
   const filteredProducts = products.filter(product => {
@@ -76,30 +88,17 @@ export default function ShopPage() {
                 >
                   All Products
                 </button>
-                <button 
-                  onClick={() => setSelectedCategory('ceramics')}
-                  className={`w-full text-left text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
-                    selectedCategory === 'ceramics' ? 'bg-gold-500/10 text-gold-600' : 'text-gray-600 hover:text-charcoal-950 hover:bg-gray-50'
-                  }`}
-                >
-                  Premium Ceramics
-                </button>
-                <button 
-                  onClick={() => setSelectedCategory('doors')}
-                  className={`w-full text-left text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
-                    selectedCategory === 'doors' ? 'bg-gold-500/10 text-gold-600' : 'text-gray-600 hover:text-charcoal-950 hover:bg-gray-50'
-                  }`}
-                >
-                  Security & Doors
-                </button>
-                <button 
-                  onClick={() => setSelectedCategory('home_items')}
-                  className={`w-full text-left text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
-                    selectedCategory === 'home_items' ? 'bg-gold-500/10 text-gold-600' : 'text-gray-600 hover:text-charcoal-950 hover:bg-gray-50'
-                  }`}
-                >
-                  Home Accessories
-                </button>
+                {categories.map((cat) => (
+                  <button 
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`w-full text-left text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
+                      selectedCategory === cat.id ? 'bg-gold-500/10 text-gold-600' : 'text-gray-600 hover:text-charcoal-950 hover:bg-gray-50'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -140,7 +139,13 @@ export default function ShopPage() {
                     </div>
                   </Link>
                   <div className="p-6">
-                    <span className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-1 block">{product.category}</span>
+                    <div className="text-xs font-bold uppercase tracking-widest text-gold-600 mb-2">
+                      {categories.find(c => c.id === product.category)?.name || 
+                       (product.category === 'ceramics' ? 'Ceramics' : 
+                        product.category === 'doors' ? 'Doors' : 
+                        product.category === 'home_items' ? 'Home Items' : 
+                        product.category)}
+                    </div>
                     <h3 className="text-lg font-bold text-charcoal-950 uppercase tracking-tight mb-2">
                       <Link href={`/shop/${product.id}`} className="hover:text-gold-600 transition-colors">
                         {product.name}

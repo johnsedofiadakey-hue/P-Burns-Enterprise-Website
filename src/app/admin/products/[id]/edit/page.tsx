@@ -239,7 +239,7 @@ export default function EditProductPage() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
               >
                 <option value="">Select a category</option>
-                {categoryOptions.map((cat: any) => (
+                {categories.map((cat: any) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
