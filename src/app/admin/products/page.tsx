@@ -71,11 +71,8 @@ export default function ProductsPage() {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
     
     try {
-      // Optimistically remove from UI
-      const previousProducts = [...products];
-      setProducts(products.filter(p => p.id !== id));
-      
       await deleteDoc(doc(db, "products", id));
+      setProducts(products.filter(p => p.id !== id));
       showToast("Product deleted successfully!");
     } catch (error: any) {
       console.error("Error deleting product:", error);
