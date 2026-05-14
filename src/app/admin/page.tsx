@@ -110,7 +110,9 @@ export default function AdminDashboard() {
                 <div key={order.id} className="py-3 flex justify-between items-center">
                   <div>
                     <div className="text-sm font-bold text-[#111111]">{order.customerName || order.customer}</div>
-                    <div className="text-xs text-gray-500">{order.date || order.createdAt?.split('T')[0]}</div>
+                    <div className="text-xs text-gray-500">
+                      {order.date || (typeof order.createdAt === 'string' ? order.createdAt.split('T')[0] : order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : '')}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold text-[#111111]">GH₵ {parseFloat(order.total).toFixed(2)}</div>
