@@ -21,6 +21,8 @@ export default function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,10 +58,17 @@ export default function ShopPage() {
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory ? product.category === selectedCategory : true
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
+    const matchesMinPrice = minPrice ? product.price >= parseFloat(minPrice) : true
+    const matchesMaxPrice = maxPrice ? product.price <= parseFloat(maxPrice) : true
+    return matchesCategory && matchesSearch && matchesMinPrice && matchesMaxPrice
   }).sort((a, b) => {
     if (sortBy === 'price_low') return a.price - b.price;
     if (sortBy === 'price_high') return b.price - a.price;
+    if (sortBy === 'newest') {
+      const dateA = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
+      const dateB = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
+      return dateB - dateA;
+    }
     return 0;
   })
 
@@ -107,8 +116,8 @@ export default function ShopPage() {
           {/* Product Grid */}
           <div className="flex-1">
             {/* Search and Sort */}
-            <div className="mb-8 flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
+            <div className="mb-8 flex flex-col sm:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
                 <input 
                   type="text" 
                   placeholder="Search materials..." 
@@ -117,6 +126,24 @@ export default function ShopPage() {
                   className="w-full px-5 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:border-gold-500 transition-colors text-sm" 
                 />
                 <svg className="w-5 h-5 text-gray-400 absolute right-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input 
+                  type="number" 
+                  placeholder="Min" 
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="w-20 px-3 py-3 bg-white border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 transition-colors text-sm" 
+                />
+                <span className="text-gray-400">-</span>
+                <input 
+                  type="number" 
+                  placeholder="Max" 
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="w-20 px-3 py-3 bg-white border border-gray-200 rounded-sm focus:outline-none focus:border-gold-500 transition-colors text-sm" 
+                />
               </div>
               <select 
                 value={sortBy}
