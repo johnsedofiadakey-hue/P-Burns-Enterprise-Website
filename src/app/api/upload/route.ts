@@ -43,16 +43,21 @@ export async function POST(request: NextRequest) {
     
     const buffer = Buffer.from(await file.arrayBuffer());
     
+    const downloadToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    
     await fileRef.save(buffer, {
       metadata: {
         contentType: file.type,
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken,
+        },
       },
     });
     
     // We do NOT use makePublic() because new Firebase buckets have Uniform Bucket-Level Access enabled.
-    // Instead, we construct the standard Firebase Storage download URL format.
+    // Instead, we construct the standard Firebase Storage download URL format with a token.
     const encodedFileName = encodeURIComponent(fileName);
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/p-burnsenterprise.firebasestorage.app/o/${encodedFileName}?alt=media`;
+    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/p-burnsenterprise.firebasestorage.app/o/${encodedFileName}?alt=media&token=${downloadToken}`;
     
     return NextResponse.json({ url: publicUrl });
   } catch (error: any) {
