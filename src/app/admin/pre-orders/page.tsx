@@ -23,8 +23,9 @@ export default function PreOrdersPage() {
   
   // Edit State
   const [editingOrder, setEditingOrder] = useState<any>(null)
-  const [editStatus, setEditStatus] = useState('ordered')
+  const [editStatus, setEditStatus] = useState('pending')
   const [editPhone, setEditPhone] = useState('')
+  const [editArrivalDate, setEditArrivalDate] = useState('')
 
   const fetchPreOrders = async () => {
     setLoading(true);
@@ -73,8 +74,9 @@ export default function PreOrdersPage() {
 
   const handleEdit = (order: any) => {
     setEditingOrder(order)
-    setEditStatus(order.status)
+    setEditStatus(order.status || 'pending')
     setEditPhone(order.phone || '')
+    setEditArrivalDate(order.estimatedArrival || '')
   }
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -84,7 +86,8 @@ export default function PreOrdersPage() {
       const docRef = doc(db, "pre_orders", editingOrder.id)
       await updateDoc(docRef, {
         status: editStatus,
-        phone: editPhone
+        phone: editPhone,
+        estimatedArrival: editArrivalDate
       })
       setEditingOrder(null)
       fetchPreOrders()
@@ -202,16 +205,26 @@ export default function PreOrdersPage() {
                 />
               </div>
               <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Estimated Arrival</label>
+                <input 
+                  type="text" 
+                  value={editArrivalDate}
+                  onChange={(e) => setEditArrivalDate(e.target.value)}
+                  placeholder="e.g. June 2026"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Status</label>
                 <select 
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
                 >
-                  <option value="ordered">Ordered</option>
-                  <option value="in_transit">In Transit</option>
+                  <option value="pending">Pending Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="shipped">Shipped</option>
                   <option value="arrived">Arrived</option>
-                  <option value="completed">Completed</option>
                 </select>
               </div>
               
