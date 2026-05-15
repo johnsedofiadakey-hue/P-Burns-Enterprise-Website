@@ -26,6 +26,10 @@ export default function PreOrdersPage() {
   const [editStatus, setEditStatus] = useState('pending')
   const [editPhone, setEditPhone] = useState('')
   const [editArrivalDate, setEditArrivalDate] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editCbm, setEditCbm] = useState('')
+  const [editShippingCost, setEditShippingCost] = useState('')
+  const [editDeliveryUpdate, setEditDeliveryUpdate] = useState('')
 
   const fetchPreOrders = async () => {
     setLoading(true);
@@ -77,6 +81,10 @@ export default function PreOrdersPage() {
     setEditStatus(order.status || 'pending')
     setEditPhone(order.phone || '')
     setEditArrivalDate(order.estimatedArrival || '')
+    setEditPrice(order.price || '')
+    setEditCbm(order.cbm || '')
+    setEditShippingCost(order.shippingCost || '')
+    setEditDeliveryUpdate(order.deliveryUpdate || '')
   }
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -87,7 +95,11 @@ export default function PreOrdersPage() {
       await updateDoc(docRef, {
         status: editStatus,
         phone: editPhone,
-        estimatedArrival: editArrivalDate
+        estimatedArrival: editArrivalDate,
+        price: editPrice ? parseFloat(editPrice) : null,
+        cbm: editCbm || '',
+        shippingCost: editShippingCost ? parseFloat(editShippingCost) : null,
+        deliveryUpdate: editDeliveryUpdate || ''
       })
       setEditingOrder(null)
       fetchPreOrders()
@@ -211,6 +223,46 @@ export default function PreOrdersPage() {
                   value={editArrivalDate}
                   onChange={(e) => setEditArrivalDate(e.target.value)}
                   placeholder="e.g. June 2026"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Price (GH₵)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Total CBM</label>
+                <input 
+                  type="text" 
+                  value={editCbm}
+                  onChange={(e) => setEditCbm(e.target.value)}
+                  placeholder="e.g. 2.5"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Shipping Cost (GH₵)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={editShippingCost}
+                  onChange={(e) => setEditShippingCost(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Delivery Update</label>
+                <textarea 
+                  value={editDeliveryUpdate}
+                  onChange={(e) => setEditDeliveryUpdate(e.target.value)}
+                  placeholder="e.g. Loaded onto container."
+                  rows={2}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all" 
                 />
               </div>

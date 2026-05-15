@@ -280,6 +280,28 @@ export default function PreOrderPage() {
                     </div>
                   </div>
                 </div>
+                
+                <div className="flex flex-col md:flex-row justify-between gap-4 mt-6 pt-4 border-t border-gray-100">
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Price</span>
+                    <div className="text-sm font-bold text-[#111111] mt-1">
+                      {trackResult.price ? `GH₵ ${trackResult.price.toFixed(2)}` : 'Pending Pricing'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">CBM / Shipping</span>
+                    <div className="text-sm font-bold text-[#111111] mt-1">
+                      {trackResult.cbm ? `${trackResult.cbm} CBM` : 'N/A'} 
+                      {trackResult.shippingCost ? ` / GH₵ ${trackResult.shippingCost.toFixed(2)}` : ''}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Latest Update</span>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {trackResult.deliveryUpdate || 'Order is being processed.'}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
