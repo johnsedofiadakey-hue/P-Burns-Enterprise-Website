@@ -158,6 +158,7 @@ export default function MarketInsightsPage() {
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Time</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Device</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Referrer</th>
                 </tr>
               </thead>
@@ -169,6 +170,9 @@ export default function MarketInsightsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">
                       {getDeviceType(visit.userAgent, visit.isMobile)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {visit.location ? `${visit.location.city}, ${visit.location.country}` : 'Unknown'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 truncate max-w-[150px]">
                       {visit.referrer}

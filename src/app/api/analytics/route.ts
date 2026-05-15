@@ -32,10 +32,25 @@ export async function POST(request: NextRequest) {
     const adminApp = getAdminApp();
     const db = getFirestore(adminApp);
     
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+    
+    let location = { city: 'Unknown', country: 'Unknown' };
+    try {
+      // Free IP geolocation API
+      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,city`);
+      const geoData = await geoRes.json();
+      if (geoData.status === 'success') {
+        location = { city: geoData.city, country: geoData.country };
+      }
+    } catch (e) {
+      // Silent fail for geo lookup
+    }
+    
     // Save to market_insights collection
     await db.collection('market_insights').add({
-      type: 'timespent',
+      type: data.type || 'timespent',
       ...data,
+      location,
       timestamp: new Date().toISOString()
     });
     

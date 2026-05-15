@@ -14,22 +14,21 @@ export default function AnalyticsTracker() {
     
     const trackVisit = async () => {
       try {
-        const { db } = await import('@/lib/firebase');
-        const { collection, addDoc } = await import('firebase/firestore');
-        
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        await addDoc(collection(db, 'market_insights'), {
-          type: 'visit',
-          pathname,
-          userAgent: navigator.userAgent,
-          isMobile,
-          screenWidth: window.innerWidth,
-          screenHeight: window.innerHeight,
-          language: navigator.language,
-          referrer: document.referrer || 'direct',
-          timestamp: new Date().toISOString()
-        });
+        await fetch('/api/analytics', {
+          method: 'POST',
+          body: JSON.stringify({
+            type: 'visit',
+            pathname,
+            userAgent: navigator.userAgent,
+            isMobile,
+            screenWidth: window.innerWidth,
+            screenHeight: window.innerHeight,
+            language: navigator.language,
+            referrer: document.referrer || 'direct'
+          })
+        }).catch(() => {});
         
         hasTrackedSession.current = true;
       } catch (e) {
@@ -48,14 +47,13 @@ export default function AnalyticsTracker() {
     
     const trackPageView = async () => {
       try {
-        const { db } = await import('@/lib/firebase');
-        const { collection, addDoc } = await import('firebase/firestore');
-        
-        await addDoc(collection(db, 'market_insights'), {
-          type: 'pageview',
-          pathname,
-          timestamp: new Date().toISOString()
-        });
+        await fetch('/api/analytics', {
+          method: 'POST',
+          body: JSON.stringify({
+            type: 'pageview',
+            pathname
+          })
+        }).catch(() => {});
       } catch (e) {
         // Silent fail for analytics
       }
