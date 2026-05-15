@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, addDoc, doc, deleteDoc } from 'firebase/firestore'
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<any[]>([])
@@ -30,8 +28,9 @@ export default function SuppliersPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "suppliers"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const res = await fetch('/api/admin/suppliers');
+      if (!res.ok) throw new Error('Failed to fetch suppliers');
+      const data = await res.json();
       setSuppliers(data);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
@@ -43,8 +42,9 @@ export default function SuppliersPage() {
 
   const fetchProducts = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const res = await fetch('/api/admin/products');
+      if (!res.ok) throw new Error('Failed to fetch products');
+      const data = await res.json();
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -61,16 +61,25 @@ export default function SuppliersPage() {
     setSubmitting(true)
     
     try {
-      await addDoc(collection(db, "suppliers"), {
-        name,
-        contact,
-        email,
-        phone,
-        country,
-        type,
-        suppliedProducts,
-        createdAt: new Date().toISOString()
+      const res = await fetch('/api/admin/suppliers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          contact,
+          email,
+          phone,
+          country,
+          type,
+          suppliedProducts,
+          createdAt: new Date().toISOString()
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create supplier');
+      }
       
       showToast('Supplier added successfully!');
       setShowModal(false);
@@ -81,10 +90,11 @@ export default function SuppliersPage() {
       setPhone('');
       setCountry('China');
       setType('Ceramics');
+      setSuppliedProducts([]);
       fetchSuppliers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding supplier:", error);
-      showToast('Error adding supplier', 'error');
+      showToast('Error adding supplier: ' + error.message, 'error');
     } finally {
       setSubmitting(false)
     }
@@ -94,12 +104,20 @@ export default function SuppliersPage() {
     if (!window.confirm('Are you sure you want to delete this supplier?')) return;
     
     try {
-      await deleteDoc(doc(db, "suppliers", id));
+      const res = await fetch(`/api/admin/suppliers/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete supplier');
+      }
+
       showToast('Supplier deleted successfully!');
       fetchSuppliers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting supplier:", error);
-      showToast('Error deleting supplier', 'error');
+      showToast('Error deleting supplier: ' + error.message, 'error');
     }
   }
 
@@ -146,7 +164,7 @@ export default function SuppliersPage() {
             <tbody className="bg-white divide-y divide-gray-100">
               {suppliers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-700 text-sm">No suppliers found.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-700 text-sm">No suppliers found.</td>
                 </tr>
               ) : (
                 suppliers.map((supplier) => (

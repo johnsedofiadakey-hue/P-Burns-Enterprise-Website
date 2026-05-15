@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 function getDeviceType(userAgent: string, isMobile: boolean) {
   if (!userAgent) return isMobile ? '📱 Mobile' : '💻 Desktop';
@@ -28,29 +26,29 @@ export default function MarketInsightsPage() {
   useEffect(() => {
     const fetchInsights = async () => {
       try {
-        const q = query(
-          collection(db, 'market_insights'),
-          orderBy('timestamp', 'desc'),
-          limit(500)
-        )
-        const snapshot = await getDocs(q)
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
+        const res = await fetch('/api/admin/market_insights');
+        if (!res.ok) throw new Error('Failed to fetch insights');
+        const data = await res.json();
         
-        setInsights(data)
+        // Sort by timestamp descending
+        data.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const limitedData = data.slice(0, 500);
+        
+        setInsights(limitedData);
         
         // Calculate aggregations
-        const visits = data.filter(d => d.type === 'visit');
+        const visits = limitedData.filter((d: any) => d.type === 'visit');
         setTotalVisits(visits.length);
         
         if (visits.length > 0) {
-          const mobileCount = visits.filter(d => d.isMobile).length;
+          const mobileCount = visits.filter((d: any) => d.isMobile).length;
           setMobilePercentage(Math.round((mobileCount / visits.length) * 100));
         }
 
         // Calculate top pages
-        const pageViews = data.filter(d => d.type === 'pageview' || d.type === 'visit');
+        const pageViews = limitedData.filter((d: any) => d.type === 'pageview' || d.type === 'visit');
         const pageCounts: Record<string, number> = {};
-        pageViews.forEach(v => {
+        pageViews.forEach((v: any) => {
           const path = v.pathname || '/';
           pageCounts[path] = (pageCounts[path] || 0) + 1;
         });
@@ -63,9 +61,9 @@ export default function MarketInsightsPage() {
         setTopPages(sortedPages);
         
         // Calculate top searches
-        const searches = data.filter(d => d.type === 'search');
+        const searches = limitedData.filter((d: any) => d.type === 'search');
         const searchCounts: Record<string, number> = {};
-        searches.forEach(s => {
+        searches.forEach((s: any) => {
           const query = s.query || '';
           if (query) {
             searchCounts[query] = (searchCounts[query] || 0) + 1;
@@ -78,8 +76,8 @@ export default function MarketInsightsPage() {
         setTopSearches(sortedSearches);
         
         // Calculate average time spent
-        const timeSpents = data.filter(d => d.type === 'timespent');
-        const totalSeconds = timeSpents.reduce((acc, curr) => acc + (curr.timeSpentSeconds || 0), 0);
+        const timeSpents = limitedData.filter((d: any) => d.type === 'timespent');
+        const totalSeconds = timeSpents.reduce((acc: number, curr: any) => acc + (curr.timeSpentSeconds || 0), 0);
         const avgTime = timeSpents.length > 0 ? Math.round(totalSeconds / timeSpents.length) : 0;
         setAvgTimeSpent(avgTime);
       } catch (error) {

@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
 
 export default function BookkeepingPage() {
   const [transactions, setTransactions] = useState<any[]>([])
@@ -30,17 +28,17 @@ export default function BookkeepingPage() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "transactions"));
-      const fetchedTransactions = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const res = await fetch('/api/admin/transactions');
+      if (!res.ok) throw new Error('Failed to fetch transactions');
+      const fetchedTransactions = await res.json();
+      
       // Sort by date descending
       fetchedTransactions.sort((a: any, b: any) => {
         const dateA = a.date ? new Date(a.date).getTime() : 0;
         const dateB = b.date ? new Date(b.date).getTime() : 0;
         return dateB - dateA;
       });
+      
       setTransactions(fetchedTransactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -58,7 +56,11 @@ export default function BookkeepingPage() {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
     
     try {
-      await deleteDoc(doc(db, "transactions", id));
+      const res = await fetch(`/api/admin/transactions/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error('Failed to delete transaction');
+      
       setTransactions(transactions.filter(t => t.id !== id));
       showToast("Transaction deleted successfully!");
     } catch (error) {
@@ -77,11 +79,16 @@ export default function BookkeepingPage() {
         category,
         description,
         amount: parseFloat(amount),
-        date,
-        createdAt: new Date().toISOString()
+        date
       };
       
-      await addDoc(collection(db, "transactions"), docData);
+      const res = await fetch('/api/admin/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+      
+      if (!res.ok) throw new Error('Failed to add transaction');
       
       showToast('Transaction added successfully!');
       setIsAddModalOpen(false);

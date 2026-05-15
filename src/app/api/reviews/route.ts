@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/firebase'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getAdminDb } from '@/lib/firebase-admin'
 
 export async function POST(request: Request) {
   try {
@@ -18,10 +17,11 @@ export async function POST(request: Request) {
       name,
       email: email || '',
       status: 'approved', // Default to approved for simplicity
-      createdAt: serverTimestamp()
+      createdAt: new Date().toISOString()
     };
 
-    const docRef = await addDoc(collection(db, "reviews"), reviewData);
+    const db = getAdminDb();
+    const docRef = await db.collection("reviews").add(reviewData);
 
     return NextResponse.json({ success: true, id: docRef.id });
   } catch (error: any) {

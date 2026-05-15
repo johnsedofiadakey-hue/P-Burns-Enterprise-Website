@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore'
 
 export default function PreOrdersPage() {
   const [preOrders, setPreOrders] = useState<any[]>([])
@@ -34,8 +32,9 @@ export default function PreOrdersPage() {
   const fetchPreOrders = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "pre_orders"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const res = await fetch('/api/admin/pre_orders');
+      if (!res.ok) throw new Error('Failed to fetch pre-orders');
+      const data = await res.json();
       setPreOrders(data);
     } catch (error) {
       console.error("Error fetching pre-orders:", error);
@@ -52,15 +51,25 @@ export default function PreOrdersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await addDoc(collection(db, "pre_orders"), {
-        customer,
-        item,
-        phone,
-        arrivalDate,
-        total: parseFloat(total),
-        status,
-        createdAt: new Date().toISOString()
+      const res = await fetch('/api/admin/pre_orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer,
+          item,
+          phone,
+          arrivalDate,
+          total: parseFloat(total),
+          status,
+          createdAt: new Date().toISOString()
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create pre-order');
+      }
+
       setShowModal(false);
       setCustomer('');
       setItem('');
@@ -91,16 +100,25 @@ export default function PreOrdersPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      const docRef = doc(db, "pre_orders", editingOrder.id)
-      await updateDoc(docRef, {
-        status: editStatus,
-        phone: editPhone,
-        estimatedArrival: editArrivalDate,
-        price: editPrice ? parseFloat(editPrice) : null,
-        cbm: editCbm || '',
-        shippingCost: editShippingCost ? parseFloat(editShippingCost) : null,
-        deliveryUpdate: editDeliveryUpdate || ''
-      })
+      const res = await fetch(`/api/admin/pre_orders/${editingOrder.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: editStatus,
+          phone: editPhone,
+          estimatedArrival: editArrivalDate,
+          price: editPrice ? parseFloat(editPrice) : null,
+          cbm: editCbm || '',
+          shippingCost: editShippingCost ? parseFloat(editShippingCost) : null,
+          deliveryUpdate: editDeliveryUpdate || ''
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update pre-order');
+      }
+
       setEditingOrder(null)
       fetchPreOrders()
     } catch (error) {
@@ -113,7 +131,15 @@ export default function PreOrdersPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this pre-order?')) return;
     try {
-      await deleteDoc(doc(db, "pre_orders", id));
+      const res = await fetch(`/api/admin/pre_orders/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete pre-order');
+      }
+
       fetchPreOrders();
     } catch (error) {
       console.error("Error deleting pre-order:", error);

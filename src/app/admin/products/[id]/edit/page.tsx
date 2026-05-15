@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { db, storage } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Image from 'next/image'
 
 export default function EditProductPage() {
@@ -34,38 +31,39 @@ export default function EditProductPage() {
     const fetchData = async () => {
       try {
         // Fetch product
-        const docSnap = await getDoc(doc(db, "products", id))
-        if (docSnap.exists()) {
-          const data = docSnap.data()
-          setName(data.name || '')
-          setDescription(data.description || '')
-          setPrice(String(data.price || ''))
-          setStock(String(data.stock || ''))
-          setCategory(data.category || '')
-          setStatus(data.status || 'draft')
-          if (data.images && Array.isArray(data.images)) {
-            setImagePreviews(data.images);
-          } else if (data.image) {
-            setImagePreviews([data.image]);
-          }
-        } else {
-          showToast('Product not found', 'error')
-          router.push('/admin/products')
+        const res = await fetch(`/api/admin/products/${id}`);
+        if (!res.ok) {
+          showToast('Product not found', 'error');
+          router.push('/admin/products');
+          return;
+        }
+        const data = await res.json();
+        
+        setName(data.name || '')
+        setDescription(data.description || '')
+        setPrice(String(data.price || ''))
+        setStock(String(data.stock || ''))
+        setCategory(data.category || '')
+        setStatus(data.status || 'draft')
+        if (data.images && Array.isArray(data.images)) {
+          setImagePreviews(data.images);
+        } else if (data.image) {
+          setImagePreviews([data.image]);
         }
 
         // Fetch categories
-        const catSnap = await getDocs(collection(db, "categories"))
-        const cats = catSnap.docs.map(d => ({ id: d.id, ...d.data() }))
-        setCategories(cats)
+        const catRes = await fetch('/api/admin/categories');
+        const cats = catRes.ok ? await catRes.json() : [];
+        setCategories(cats);
       } catch (error) {
-        console.error("Error fetching product:", error)
-        showToast('Error loading product', 'error')
+        console.error("Error fetching product:", error);
+        showToast('Error loading product', 'error');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchData()
-  }, [id, router])
+    fetchData();
+  }, [id, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,17 +93,22 @@ export default function EditProductPage() {
         }
       }
       
-      await updateDoc(doc(db, "products", id as string), {
-        name,
-        description,
-        price: parseFloat(price),
-        stock: parseInt(stock),
-        category,
-        status,
-        image: imageUrls[0] || '/placeholder.png',
-        images: imageUrls,
-        updatedAt: new Date().toISOString()
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          price: parseFloat(price),
+          stock: parseInt(stock),
+          category,
+          status,
+          image: imageUrls[0] || '/placeholder.png',
+          images: imageUrls
+        })
       });
+
+      if (!res.ok) throw new Error('Failed to update product');
 
       showToast('Product updated successfully!')
       setTimeout(() => router.push('/admin/products'), 1000)
@@ -240,7 +243,7 @@ export default function EditProductPage() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all"
               >
                 <option value="">Select a category</option>
-                {categories.map((cat: any) => (
+                {categoryOptions.map((cat: any) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>

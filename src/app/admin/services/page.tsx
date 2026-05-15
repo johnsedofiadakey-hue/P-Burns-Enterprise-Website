@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore'
+import Link from 'next/link'
 
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([])
@@ -26,9 +25,11 @@ export default function ServicesPage() {
   }
 
   const fetchServices = async () => {
+    setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "services"));
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const res = await fetch('/api/admin/services');
+      if (!res.ok) throw new Error('Failed to fetch services');
+      const data = await res.json();
       setServices(data);
     } catch (error) {
       console.error("Error fetching services:", error);
@@ -48,7 +49,11 @@ export default function ServicesPage() {
       ]
       
       for (const serv of initialServices) {
-        await addDoc(collection(db, "services"), serv);
+        await fetch('/api/admin/services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(serv)
+        });
       }
       
       showToast("Seeded initial services successfully!");
@@ -70,12 +75,21 @@ export default function ServicesPage() {
     setSubmitting(true)
     
     try {
-      await addDoc(collection(db, "services"), {
-        name,
-        description,
-        rate: parseFloat(rate),
-        createdAt: new Date().toISOString()
+      const res = await fetch('/api/admin/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          rate: parseFloat(rate),
+          createdAt: new Date().toISOString()
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create service');
+      }
       
       showToast('Service added successfully!');
       setShowModal(false);
@@ -84,9 +98,9 @@ export default function ServicesPage() {
       setDescription('');
       setRate('');
       fetchServices();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding service:", error);
-      showToast('Error adding service', 'error');
+      showToast('Error adding service: ' + error.message, 'error');
     } finally {
       setSubmitting(false)
     }
@@ -105,13 +119,21 @@ export default function ServicesPage() {
     setSubmitting(true);
     
     try {
-      const docRef = doc(db, "services", editingService.id);
-      await updateDoc(docRef, {
-        name,
-        description,
-        rate: parseFloat(rate),
-        updatedAt: new Date().toISOString()
+      const res = await fetch(`/api/admin/services/${editingService.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          rate: parseFloat(rate),
+          updatedAt: new Date().toISOString()
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update service');
+      }
       
       showToast('Service updated successfully!');
       setShowEditModal(false);
@@ -120,9 +142,9 @@ export default function ServicesPage() {
       setDescription('');
       setRate('');
       fetchServices();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating service:", error);
-      showToast('Error updating service', 'error');
+      showToast('Error updating service: ' + error.message, 'error');
     } finally {
       setSubmitting(false);
     }
@@ -132,12 +154,20 @@ export default function ServicesPage() {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     
     try {
-      await deleteDoc(doc(db, "services", id));
+      const res = await fetch(`/api/admin/services/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete service');
+      }
+
       showToast('Service deleted successfully!');
       fetchServices();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting service:", error);
-      showToast('Error deleting service', 'error');
+      showToast('Error deleting service: ' + error.message, 'error');
     }
   }
 

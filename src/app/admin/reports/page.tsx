@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs } from 'firebase/firestore'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 export default function ReportsPage() {
@@ -15,12 +13,12 @@ export default function ReportsPage() {
     setMounted(true)
     const fetchData = async () => {
       try {
-        const transSnapshot = await getDocs(collection(db, "transactions"));
-        const fetchedTrans = transSnapshot.docs.map(doc => doc.data());
+        const transRes = await fetch('/api/admin/transactions');
+        const fetchedTrans = transRes.ok ? await transRes.json() : [];
         setTransactions(fetchedTrans);
 
-        const ordersSnapshot = await getDocs(collection(db, "orders"));
-        const fetchedOrders = ordersSnapshot.docs.map(doc => doc.data());
+        const ordersRes = await fetch('/api/admin/orders');
+        const fetchedOrders = ordersRes.ok ? await ordersRes.json() : [];
         setOrders(fetchedOrders);
       } catch (error) {
         console.error("Error fetching report data:", error);

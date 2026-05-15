@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 export default function ActivityLogPage() {
   const [logs, setLogs] = useState<any[]>([])
@@ -11,17 +9,15 @@ export default function ActivityLogPage() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const q = query(
-          collection(db, 'activity_logs'),
-          orderBy('timestamp', 'desc'),
-          limit(100)
-        )
-        const snapshot = await getDocs(q)
-        const fetchedLogs = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        setLogs(fetchedLogs)
+        const res = await fetch('/api/admin/activity_logs');
+        if (!res.ok) throw new Error('Failed to fetch logs');
+        const data = await res.json();
+        
+        // Sort by timestamp descending
+        data.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const limitedData = data.slice(0, 100);
+        
+        setLogs(limitedData);
       } catch (error) {
         console.error("Error fetching logs:", error)
       } finally {

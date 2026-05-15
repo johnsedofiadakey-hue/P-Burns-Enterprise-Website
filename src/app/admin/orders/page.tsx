@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import Link from 'next/link'
 
 export default function OrdersPage() {
@@ -23,18 +21,10 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "orders"));
-      const fetchedOrders = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      // Sort by date descending if available
-      fetchedOrders.sort((a: any, b: any) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA;
-      });
-      setOrders(fetchedOrders);
+      const res = await fetch('/api/admin/orders');
+      if (!res.ok) throw new Error('Failed to fetch orders');
+      const data = await res.json();
+      setOrders(data);
     } catch (error) {
       console.error("Error fetching orders:", error);
       showToast("Error fetching orders", "error")
@@ -51,7 +41,15 @@ export default function OrdersPage() {
     if (!confirm('Are you sure you want to delete this order?')) return;
     
     try {
-      await deleteDoc(doc(db, "orders", id));
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete order');
+      }
+
       setOrders(orders.filter(o => o.id !== id));
       showToast("Order deleted successfully!");
     } catch (error) {
@@ -203,13 +201,22 @@ export default function OrdersPage() {
                   onChange={async (e) => {
                     const newStatus = e.target.value;
                     try {
-                      const { updateDoc } = await import('firebase/firestore');
-                      await updateDoc(doc(db, "orders", selectedOrder.id), { status: newStatus });
+                      const res = await fetch(`/api/admin/orders/${selectedOrder.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: newStatus })
+                      });
+                      
+                      if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error || 'Failed to update status');
+                      }
+                      
                       setSelectedOrder({...selectedOrder, status: newStatus});
                       fetchOrders();
                       showToast("Order status updated!");
-                    } catch (error) {
-                      showToast("Failed to update status", "error");
+                    } catch (error: any) {
+                      showToast(`Failed to update status: ${error.message}`, "error");
                     }
                   }}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 transition-all text-sm"

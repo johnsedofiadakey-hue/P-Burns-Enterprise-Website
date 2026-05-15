@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Script from 'next/script'
 import { db } from '@/lib/firebase'
-import { collection, addDoc, doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 
 export default function CheckoutPage() {
   const [name, setName] = useState('')
@@ -103,19 +103,25 @@ export default function CheckoutPage() {
     try {
       const orderNumber = `PB-WA-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
       
-      await addDoc(collection(db, "orders"), {
-        orderNumber,
-        name,
-        email,
-        phone,
-        address,
-        items: cartItems,
-        subtotal,
-        deliveryFee,
-        total,
-        status: 'Pending WhatsApp',
-        createdAt: new Date()
-      })
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          address,
+          items: cartItems,
+          subtotal,
+          deliveryFee,
+          total,
+          orderNumber,
+          status: 'Pending WhatsApp'
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to create order');
       
       const itemsText = cartItems.map(item => `${item.quantity}x ${item.name}`).join(', ')
       const message = `Hello, I want to place an order.\n\n*Order No:* ${orderNumber}\n*Name:* ${name}\n*Items:* ${itemsText}\n*Total:* GH₵ ${total.toFixed(2)}\n\nPlease process my order.`

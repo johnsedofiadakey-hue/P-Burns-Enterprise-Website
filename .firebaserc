@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "p-burnsenterprise"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

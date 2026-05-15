@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
 import Link from 'next/link'
 
 export default function CategoriesPage() {
@@ -26,12 +24,10 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "categories"));
-      const fetchedCategories = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCategories(fetchedCategories);
+      const res = await fetch('/api/admin/categories');
+      if (!res.ok) throw new Error('Failed to fetch categories');
+      const data = await res.json();
+      setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
       showToast("Error fetching categories", "error")
@@ -48,7 +44,15 @@ export default function CategoriesPage() {
     if (!confirm('Are you sure you want to delete this category?')) return;
     
     try {
-      await deleteDoc(doc(db, "categories", id));
+      const res = await fetch(`/api/admin/categories/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete category');
+      }
+
       setCategories(categories.filter(c => c.id !== id));
       showToast("Category deleted successfully!");
     } catch (error) {
@@ -62,11 +66,20 @@ export default function CategoriesPage() {
     setSaving(true)
     
     try {
-      await addDoc(collection(db, "categories"), {
-        name,
-        description,
-        createdAt: new Date().toISOString()
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          createdAt: new Date().toISOString()
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create category');
+      }
       
       showToast('Category created successfully!');
       setIsModalOpen(false);

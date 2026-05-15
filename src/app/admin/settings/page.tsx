@@ -115,17 +115,17 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const [docSnap, themeSnap, statsSnap, aboutSnap, testimonialsSnap, projectsSnap] = await Promise.all([
-          getDoc(doc(db, "settings", "general")),
-          getDoc(doc(db, "settings", "theme")),
-          getDoc(doc(db, "settings", "stats")),
-          getDoc(doc(db, "settings", "about")),
-          getDoc(doc(db, "settings", "testimonials")),
-          getDoc(doc(db, "settings", "projects"))
+        const [generalData, themeData, statsData, aboutData, testimonialsData, projectsData] = await Promise.all([
+          fetch('/api/admin/settings/general').then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/settings/theme').then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/settings/stats').then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/settings/about').then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/settings/testimonials').then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/settings/projects').then(r => r.ok ? r.json() : null)
         ]);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        if (generalData) {
+          const data = generalData;
           setPhone(data.phone || '');
           setEmail(data.email || '');
           setAddress(data.address || '');
@@ -151,16 +151,16 @@ export default function SettingsPage() {
           setSmsSenderId(data.smsSenderId || 'PBurns');
         }
         
-        if (themeSnap.exists()) {
-          const data = themeSnap.data();
+        if (themeData) {
+          const data = themeData;
           setPrimaryColor(data.primary || '#B68D40');
           setSecondaryColor(data.secondary || '#111111');
           setBackgroundColor(data.background || '#FAFAFA');
           setLogoUrl(data.logoUrl || '');
         }
         
-        if (statsSnap.exists()) {
-          const data = statsSnap.data();
+        if (statsData) {
+          const data = statsData;
           setStat1Label(data.stat1Label || 'Projects Completed');
           setStat1Value(data.stat1Value || '500+');
           setStat2Label(data.stat2Label || 'Tiles Delivered');
@@ -169,16 +169,16 @@ export default function SettingsPage() {
           setStat3Value(data.stat3Value || '20+');
         }
         
-        if (aboutSnap.exists()) {
-          const data = aboutSnap.data();
+        if (aboutData) {
+          const data = aboutData;
           setAboutHeroTitle(data.heroTitle || 'About P-Burns Enterprise');
           setAboutHeroDesc(data.heroDesc || 'Ghana\'s premier destination for high-quality building finishing materials, luxury ceramics, and robust security doors.');
           setAboutStoryTitle(data.storyTitle || 'Built on Quality & Trust');
           setAboutStoryContent(data.storyContent || 'Founded with a vision to revolutionize the construction and building finishing industry in Ghana, P-Burns Enterprise has grown to become a trusted name for individuals and large-scale developers alike.\n\nWe specialize in sourcing premium ceramics, luxury doors, and enterprise construction supplies directly from top global manufacturers. This allows us to bypass middlemen and offer our clients the best quality at highly competitive rates.');
         }
         
-        if (testimonialsSnap.exists()) {
-          const data = testimonialsSnap.data();
+        if (testimonialsData) {
+          const data = testimonialsData;
           setT1Name(data.t1Name || 'Kofi Annan');
           setT1Role(data.t1Role || 'Project Manager, Accra');
           setT1Quote(data.t1Quote || '"The quality of the ceramics we received for our hotel project was outstanding. P-Burns delivered on time and the installation was flawless."');
@@ -190,8 +190,8 @@ export default function SettingsPage() {
           setT3Quote(data.t3Quote || '"Their security doors are the best in the market. Heavy, secure, and beautiful. I recommend P-Burns to all my clients."');
         }
 
-        if (projectsSnap.exists()) {
-          const data = projectsSnap.data();
+        if (projectsData) {
+          const data = projectsData;
           setP1Title(data.p1Title || 'Luxury Hotel Accra');
           setP1Desc(data.p1Desc || 'Premium ceramic tiling for the entire lobby and suites.');
           setP1Image(data.p1Image || '/category_ceramics.png');
@@ -253,39 +253,51 @@ export default function SettingsPage() {
       const currentLogoUrl = await handleLogoUpload();
       
       // Save general settings
-      await setDoc(doc(db, "settings", "general"), {
-        phone, email, address, bankName, accountName, accountNumber,
-        momoNumber, momoName, momoNetwork,
-        terms,
-        tiktokUrl, instagramUrl, facebookUrl, whatsappUrl, websiteUrl,
-        paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
-        taxPercentage, isTaxEnabled, deliveryFee, whatsappNumber,
-        updatedAt: new Date().toISOString()
+      await fetch('/api/admin/settings/general', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone, email, address, bankName, accountName, accountNumber,
+          momoNumber, momoName, momoNetwork,
+          terms,
+          tiktokUrl, instagramUrl, facebookUrl, whatsappUrl, websiteUrl,
+          paystackPublicKey, resendApiKey, smsApiKey, smsSenderId,
+          taxPercentage, isTaxEnabled, deliveryFee, whatsappNumber
+        })
       });
       
       // Save theme settings
-      await setDoc(doc(db, "settings", "theme"), {
-        primary: primaryColor,
-        secondary: secondaryColor,
-        background: backgroundColor,
-        logoUrl: currentLogoUrl,
-        updatedAt: new Date().toISOString()
+      await fetch('/api/admin/settings/theme', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          primary: primaryColor,
+          secondary: secondaryColor,
+          background: backgroundColor,
+          logoUrl: currentLogoUrl
+        })
       });
       
       // Save stats settings
-      await setDoc(doc(db, "settings", "stats"), {
-        stat1Label, stat1Value,
-        stat2Label, stat2Value,
-        stat3Label, stat3Value,
-        updatedAt: new Date().toISOString()
+      await fetch('/api/admin/settings/stats', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stat1Label, stat1Value,
+          stat2Label, stat2Value,
+          stat3Label, stat3Value
+        })
       });
       
       // Save testimonials settings
-      await setDoc(doc(db, "settings", "testimonials"), {
-        t1Name, t1Role, t1Quote,
-        t2Name, t2Role, t2Quote,
-        t3Name, t3Role, t3Quote,
-        updatedAt: new Date().toISOString()
+      await fetch('/api/admin/settings/testimonials', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          t1Name, t1Role, t1Quote,
+          t2Name, t2Role, t2Quote,
+          t3Name, t3Role, t3Quote
+        })
       });
 
       let p1Url = p1Image;
@@ -309,19 +321,14 @@ export default function SettingsPage() {
       }
 
       // Save projects settings
-      await setDoc(doc(db, "settings", "projects"), {
-        p1Title, p1Desc, p1Image: p1Url,
-        p2Title, p2Desc, p2Image: p2Url,
-        p3Title, p3Desc, p3Image: p3Url,
-        updatedAt: new Date().toISOString()
-      });
-      
-      // Save testimonials settings
-      await setDoc(doc(db, "settings", "testimonials"), {
-        t1Name, t1Role, t1Quote,
-        t2Name, t2Role, t2Quote,
-        t3Name, t3Role, t3Quote,
-        updatedAt: new Date().toISOString()
+      await fetch('/api/admin/settings/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          p1Title, p1Desc, p1Image: p1Url,
+          p2Title, p2Desc, p2Image: p2Url,
+          p3Title, p3Desc, p3Image: p3Url
+        })
       });
       
       showToast('Settings & branding updated successfully!');

@@ -1,38 +1,13 @@
 import { NextResponse } from 'next/server';
+import { getAdminDb } from '@/lib/firebase-admin';
 import { sendEmail } from '@/lib/email';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-// Initialize Firebase Admin
-function getAdminApp() {
-  if (getApps().length > 0) return getApps()[0];
-  
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  
-  if (privateKey && process.env.FIREBASE_CLIENT_EMAIL) {
-    return initializeApp({
-      credential: cert({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'p-burnsenterprise',
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey,
-      }),
-      storageBucket: 'p-burnsenterprise.firebasestorage.app',
-    });
-  }
-  
-  // Use Application Default Credentials (ADC) in App Hosting / GCP
-  return initializeApp({
-    storageBucket: 'p-burnsenterprise.firebasestorage.app',
-  });
-}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, itemToOrder, quantity, description } = body;
 
-    const adminApp = getAdminApp();
-    const db = getFirestore(adminApp);
+    const db = getAdminDb();
     
     // Save to pre_orders collection
     const docRef = await db.collection('pre_orders').add({
@@ -86,6 +61,35 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, orderId });
+  } catch (error) {
+    console.error("Error in pre-order API:", error);
+    return NextResponse.json({ success: false, error: 'Failed to process request' }, { status: 500 });
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
+    }
+    
+    const db = getAdminDb();
+    const doc = await db.collection('pre_orders').doc(id).get();
+    
+    if (!doc.exists) {
+      return NextResponse.json({ success: false, error: 'Pre-order not found' }, { status: 404 });
+    }
+    
+    const data = doc.data();
+    // Return all non-sensitive info
+    const { email, customer, ...publicData } = data || {};
+    return NextResponse.json({
+      success: true,
+      data: publicData
+    });
   } catch (error) {
     console.error("Error in pre-order API:", error);
     return NextResponse.json({ success: false, error: 'Failed to process request' }, { status: 500 });

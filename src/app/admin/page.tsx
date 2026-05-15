@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { db } from '@/lib/firebase'
-import { collection, getDocs } from 'firebase/firestore'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -18,18 +16,18 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const ordersSnapshot = await getDocs(collection(db, "orders"));
-        const orders = ordersSnapshot.docs.map(doc => doc.data());
-        const totalSales = orders.reduce((acc, o) => acc + (typeof o.total === 'number' ? o.total : parseFloat(o.total || 0)), 0);
-        const pendingOrders = orders.filter(o => o.status === 'pending').length;
+        const ordersRes = await fetch('/api/admin/orders');
+        const orders = ordersRes.ok ? await ordersRes.json() : [];
+        const totalSales = orders.reduce((acc: number, o: any) => acc + (typeof o.total === 'number' ? o.total : parseFloat(o.total || 0)), 0);
+        const pendingOrders = orders.filter((o: any) => o.status === 'pending').length;
 
-        const contractsSnapshot = await getDocs(collection(db, "contracts"));
-        const contracts = contractsSnapshot.docs.map(doc => doc.data());
-        const activeContracts = contracts.filter(c => c.status === 'in_progress' || c.status === 'deposit_paid').length;
+        const contractsRes = await fetch('/api/admin/contracts');
+        const contracts = contractsRes.ok ? await contractsRes.json() : [];
+        const activeContracts = contracts.filter((c: any) => c.status === 'in_progress' || c.status === 'deposit_paid').length;
 
-        const productsSnapshot = await getDocs(collection(db, "products"));
-        const products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const lowStock = products.filter(p => (typeof (p as any).stock === 'number' ? (p as any).stock : parseInt((p as any).stock || 0)) < 10);
+        const productsRes = await fetch('/api/admin/products');
+        const products = productsRes.ok ? await productsRes.json() : [];
+        const lowStock = products.filter((p: any) => (typeof p.stock === 'number' ? p.stock : parseInt(p.stock || 0)) < 10);
         setLowStockProducts(lowStock);
 
         setRecentOrders(orders.slice(0, 5));

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import Link from 'next/link'
 
 export default function PayrollPage() {
   const [employees, setEmployees] = useState<any[]>([])
@@ -28,11 +27,9 @@ export default function PayrollPage() {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "employees"));
-      const data = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const res = await fetch('/api/admin/employees');
+      if (!res.ok) throw new Error('Failed to fetch employees');
+      const data = await res.json();
       setEmployees(data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -66,7 +63,16 @@ export default function PayrollPage() {
         createdAt: new Date().toISOString()
       };
       
-      await addDoc(collection(db, "employees"), docData);
+      const res = await fetch('/api/admin/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to add employee');
+      }
       
       showToast('Employee added successfully!');
       setIsAddModalOpen(false);
@@ -104,11 +110,21 @@ export default function PayrollPage() {
         }))
       };
       
-      await addDoc(collection(db, "payrolls"), docData);
+      const res = await fetch('/api/admin/payrolls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to process payroll');
+      }
+
       showToast(`Payroll for ${currentMonth} processed successfully!`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error processing payroll:", error);
-      showToast("Error processing payroll", "error");
+      showToast(`Error processing payroll: ${error.message}`, "error");
     } finally {
       setSaving(false);
     }
@@ -178,12 +194,20 @@ export default function PayrollPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this employee?')) return;
     try {
-      await deleteDoc(doc(db, "employees", id));
+      const res = await fetch(`/api/admin/employees/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete employee');
+      }
+
       setEmployees(employees.filter(e => e.id !== id));
       showToast("Employee deleted successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting employee:", error);
-      showToast("Error deleting employee", "error");
+      showToast(`Error deleting employee: ${error.message}`, "error");
     }
   };
 

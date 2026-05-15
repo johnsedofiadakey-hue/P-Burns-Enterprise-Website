@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+
 
 const preOrderItems = [
   { id: '1', name: 'Premium Ceramic Tiles (Wood Finish)', arrival: 'June 2026', price: 120.00 },
@@ -26,13 +25,13 @@ export default function PreOrderPage() {
     setTrackLoading(true)
     setTrackResult(null)
     try {
-      const docRef = doc(db, 'pre_orders', trackId);
-      const docSnap = await getDoc(docRef);
+      const res = await fetch(`/api/pre-order?id=${trackId}`);
+      const data = await res.json();
       
-      if (docSnap.exists()) {
-        setTrackResult(docSnap.data());
+      if (data.success) {
+        setTrackResult(data.data);
       } else {
-        alert('No pre-order found with that ID.');
+        alert(data.error || 'No pre-order found with that ID.');
       }
     } catch (error) {
       console.error("Error tracking pre-order:", error);

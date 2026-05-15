@@ -1,9 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db, storage } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 
 export default function ProductsPage() {
@@ -36,12 +33,10 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      const fetchedProducts = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setProducts(fetchedProducts);
+      const res = await fetch('/api/admin/products');
+      if (!res.ok) throw new Error('Failed to fetch products');
+      const data = await res.json();
+      setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
       showToast("Error fetching products", "error")
@@ -55,8 +50,11 @@ export default function ProductsPage() {
     // Also fetch categories for the add product form
     const fetchCategories = async () => {
       try {
-        const snap = await getDocs(collection(db, "categories"));
-        setCategories(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        const res = await fetch('/api/admin/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
       } catch {}
     };
     fetchCategories();
@@ -72,7 +70,16 @@ export default function ProductsPage() {
     try {
       console.log("Attempting to delete product with ID:", id);
       showToast("Deleting product...");
-      await deleteDoc(doc(db, "products", id));
+      
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete product');
+      }
+      
       setProducts(products.filter(p => p.id !== id));
       setConfirmDeleteId(null);
       showToast("Product deleted successfully!");
@@ -114,17 +121,26 @@ export default function ProductsPage() {
         setUploading(false);
       }
       
-      const docRef = await addDoc(collection(db, "products"), {
-        name,
-        description,
-        price: parseFloat(price),
-        stock: parseInt(stock),
-        image: imageUrls[0] || '/placeholder.png',
-        images: imageUrls,
-        category,
-        status,
-        createdAt: new Date().toISOString()
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          price: parseFloat(price),
+          stock: parseInt(stock),
+          image: imageUrls[0] || '/placeholder.png',
+          images: imageUrls,
+          category,
+          status,
+          createdAt: new Date().toISOString()
+        })
       });
+      
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create product');
+      }
       
       showToast('Product created successfully!');
       setIsModalOpen(false);

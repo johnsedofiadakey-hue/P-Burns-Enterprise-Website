@@ -15,6 +15,22 @@ export default function ShopClient({ products, categories }: ShopClientProps) {
   const [sortBy, setSortBy] = useState('newest')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [wishlist, setWishlist] = useState<string[]>([])
+
+  useEffect(() => {
+    const savedWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    setWishlist(savedWishlist);
+  }, []);
+
+  const toggleWishlist = (id: string) => {
+    const updatedWishlist = wishlist.includes(id)
+      ? wishlist.filter(itemId => itemId !== id)
+      : [...wishlist, id];
+    
+    setWishlist(updatedWishlist);
+    localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+    window.dispatchEvent(new Event('wishlist-updated'));
+  };
 
   useEffect(() => {
     if (!searchQuery) return;
@@ -167,7 +183,7 @@ export default function ShopClient({ products, categories }: ShopClientProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProducts.map((product: any) => (
-                <div key={product.id} className="bg-white rounded-2xl shadow-xl shadow-charcoal-900/5 hover:-translate-y-2 transition-all duration-500 border border-gray-100 overflow-hidden group">
+                <div key={product.id} className="relative bg-white rounded-2xl shadow-xl shadow-charcoal-900/5 hover:-translate-y-2 transition-all duration-500 border border-gray-100 overflow-hidden group">
                   <Link href={`/shop/${product.id}`}>
                     <div className="relative h-64 bg-gradient-to-br from-charcoal-900 to-charcoal-950 flex items-center justify-center overflow-hidden">
                       {product.image ? (
@@ -180,6 +196,18 @@ export default function ShopClient({ products, categories }: ShopClientProps) {
                       )}
                     </div>
                   </Link>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleWishlist(product.id);
+                    }}
+                    className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-charcoal-900 hover:text-red-500 transition-colors z-10"
+                    aria-label={wishlist.includes(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <svg className={`w-5 h-5 ${wishlist.includes(product.id) ? 'fill-red-500 text-red-500' : 'fill-none stroke-current'}`} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                  </button>
                   <div className="p-6">
                     <div className="text-xs font-bold uppercase tracking-widest text-gold-600 mb-2">
                       {categories.find(c => c.id === product.category)?.name || 

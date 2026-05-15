@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db, storage } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore'
+import { storage } from '@/lib/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 
@@ -35,11 +34,9 @@ export default function ContractsPage() {
   const fetchContracts = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "contracts"));
-      const fetchedContracts = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const res = await fetch('/api/admin/contracts');
+      if (!res.ok) throw new Error('Failed to fetch contracts');
+      const fetchedContracts = await res.json();
       setContracts(fetchedContracts);
     } catch (error) {
       console.error("Error fetching contracts:", error);
@@ -57,7 +54,11 @@ export default function ContractsPage() {
     if (!confirm('Are you sure you want to delete this contract?')) return;
     
     try {
-      await deleteDoc(doc(db, "contracts", id));
+      const res = await fetch(`/api/admin/contracts/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error('Failed to delete contract');
+      
       setContracts(contracts.filter(c => c.id !== id));
       showToast("Contract deleted successfully!");
     } catch (error) {
@@ -84,11 +85,16 @@ export default function ContractsPage() {
         value: parseFloat(value),
         status,
         startDate,
-        documentUrl,
-        createdAt: new Date().toISOString()
+        documentUrl
       };
       
-      await addDoc(collection(db, "contracts"), docData);
+      const res = await fetch('/api/admin/contracts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+      
+      if (!res.ok) throw new Error('Failed to add contract');
       
       showToast('Contract added successfully!');
       setIsAddModalOpen(false);
@@ -385,13 +391,19 @@ export default function ContractsPage() {
                 onClick={async () => {
                   setSaving(true);
                   try {
-                    await updateDoc(doc(db, "contracts", editingContract.id), {
-                      customer: editingContract.customer,
-                      serviceType: editingContract.serviceType,
-                      status: editingContract.status,
-                      value: editingContract.value,
-                      updatedAt: new Date().toISOString()
+                    const res = await fetch(`/api/admin/contracts/${editingContract.id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        customer: editingContract.customer,
+                        serviceType: editingContract.serviceType,
+                        status: editingContract.status,
+                        value: editingContract.value
+                      })
                     });
+                    
+                    if (!res.ok) throw new Error('Failed to update contract');
+                    
                     showToast('Contract updated successfully!');
                     setIsEditModalOpen(false);
                     fetchContracts();

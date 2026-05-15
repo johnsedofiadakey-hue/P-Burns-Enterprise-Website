@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db, storage } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, getDoc } from 'firebase/firestore'
+import { storage } from '@/lib/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 import jsPDF from 'jspdf'
@@ -43,9 +42,10 @@ export default function InvoicesPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const docSnap = await getDoc(doc(db, "settings", "general"));
-        if (docSnap.exists()) {
-          setSettings(docSnap.data());
+        const res = await fetch('/api/admin/settings/general');
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -62,14 +62,12 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "invoices"));
-      const fetchedInvoices = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setInvoices(fetchedInvoices);
-      if (fetchedInvoices.length > 0 && !selectedInvoice) {
-        setSelectedInvoice(fetchedInvoices[0]); // Select first one by default if none selected
+      const res = await fetch('/api/admin/invoices');
+      if (!res.ok) throw new Error('Failed to fetch invoices');
+      const data = await res.json();
+      setInvoices(data);
+      if (data.length > 0 && !selectedInvoice) {
+        setSelectedInvoice(data[0]); // Select first one by default if none selected
       }
     } catch (error) {
       console.error("Error fetching invoices:", error);
@@ -87,7 +85,15 @@ export default function InvoicesPage() {
     if (!confirm('Are you sure you want to delete this invoice?')) return;
     
     try {
-      await deleteDoc(doc(db, "invoices", id));
+      const res = await fetch(`/api/admin/invoices/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete invoice');
+      }
+
       const updatedInvoices = invoices.filter(i => i.id !== id);
       setInvoices(updatedInvoices);
       if (selectedInvoice?.id === id) {
@@ -148,10 +154,30 @@ export default function InvoicesPage() {
       };
       
       if (isEditing && selectedInvoice) {
-        await updateDoc(doc(db, "invoices", selectedInvoice.id), docData);
+        const res = await fetch(`/api/admin/invoices/${selectedInvoice.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(docData)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to update invoice');
+        }
+
         showToast('Document updated successfully!');
       } else {
-        await addDoc(collection(db, "invoices"), { ...docData, createdAt: new Date().toISOString() });
+        const res = await fetch('/api/admin/invoices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...docData, createdAt: new Date().toISOString() })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to create invoice');
+        }
+
         showToast('Document created successfully!');
       }
       
@@ -195,8 +221,17 @@ export default function InvoicesPage() {
   const handleRecordPayment = async () => {
     if (!selectedInvoice) return;
     try {
-      const docRef = doc(db, "invoices", selectedInvoice.id);
-      await updateDoc(docRef, { status: 'paid' });
+      const res = await fetch(`/api/admin/invoices/${selectedInvoice.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'paid' })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update invoice');
+      }
+
       setSelectedInvoice({ ...selectedInvoice, status: 'paid' });
       fetchInvoices();
       showToast('Payment recorded successfully!');
@@ -253,10 +288,19 @@ export default function InvoicesPage() {
     if (!selectedInvoice) return;
     setSaving(true);
     try {
-      await updateDoc(doc(db, "invoices", selectedInvoice.id), {
-        type: 'invoice',
-        invoiceNumber: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+      const res = await fetch(`/api/admin/invoices/${selectedInvoice.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'invoice',
+          invoiceNumber: `INV-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+        })
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update invoice');
+      }
       showToast("Quote converted to Invoice!");
       setSelectedInvoice({ ...selectedInvoice, type: 'invoice' });
       fetchInvoices();
@@ -412,8 +456,14 @@ export default function InvoicesPage() {
                     onClick={async () => {
                       if (!confirm('Are you sure you want to delete this invoice?')) return;
                       try {
-                        const { deleteDoc, doc } = await import('firebase/firestore');
-                        await deleteDoc(doc(db, "invoices", selectedInvoice.id));
+                        const res = await fetch(`/api/admin/invoices/${selectedInvoice.id}`, {
+                          method: 'DELETE'
+                        });
+
+                        if (!res.ok) {
+                          const errData = await res.json().catch(() => ({}));
+                          throw new Error(errData.error || 'Failed to delete invoice');
+                        }
                         setSelectedInvoice(null);
                         fetchInvoices();
                         showToast("Invoice deleted successfully!");

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db, auth } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
 import { sendPasswordResetEmail } from 'firebase/auth'
 import Link from 'next/link'
 
@@ -30,12 +29,10 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "users"));
-      const fetchedUsers = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setUsers(fetchedUsers);
+      const res = await fetch('/api/admin/users');
+      if (!res.ok) throw new Error('Failed to fetch users');
+      const data = await res.json();
+      setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
       showToast("Error fetching users", "error");
@@ -52,7 +49,15 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-      await deleteDoc(doc(db, "users", id));
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete user');
+      }
+
       setUsers(users.filter(u => u.id !== id));
       showToast("User deleted successfully!");
     } catch (error) {
@@ -109,7 +114,16 @@ export default function UsersPage() {
         createdAt: new Date().toISOString()
       };
       
-      await addDoc(collection(db, "users"), docData);
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create user document');
+      }
       
       showToast('User added successfully!');
       setIsAddModalOpen(false);

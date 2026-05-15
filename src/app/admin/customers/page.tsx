@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
 import Link from 'next/link'
 
 export default function CustomersPage() {
@@ -28,19 +26,19 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "customers"));
-      const fetchedCustomers = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      // Fetch customers via API
+      const customersRes = await fetch('/api/admin/customers');
+      if (!customersRes.ok) throw new Error('Failed to fetch customers');
+      const fetchedCustomers = await customersRes.json();
 
-      const ordersSnapshot = await getDocs(collection(db, "orders"));
-      const orders = ordersSnapshot.docs.map(doc => doc.data());
+      // Fetch orders via API to calculate totals
+      const ordersRes = await fetch('/api/admin/orders');
+      const orders = ordersRes.ok ? await ordersRes.json() : [];
 
-      const enrichedCustomers = fetchedCustomers.map(customer => {
-        const customerOrders = orders.filter(order => order.customerId === customer.id || order.customer === (customer as any).name);
+      const enrichedCustomers = fetchedCustomers.map((customer: any) => {
+        const customerOrders = orders.filter((order: any) => order.customerId === customer.id || order.customer === customer.name);
         const totalOrders = customerOrders.length;
-        const totalSpent = customerOrders.reduce((acc, order) => acc + (typeof order.total === 'number' ? order.total : parseFloat(order.total || 0)), 0);
+        const totalSpent = customerOrders.reduce((acc: number, order: any) => acc + (typeof order.total === 'number' ? order.total : parseFloat(order.total || 0)), 0);
         return {
           ...customer,
           totalOrders,
@@ -65,12 +63,20 @@ export default function CustomersPage() {
     if (!confirm('Are you sure you want to delete this customer?')) return;
     
     try {
-      await deleteDoc(doc(db, "customers", id));
+      const res = await fetch(`/api/admin/customers/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to delete customer');
+      }
+
       setCustomers(customers.filter(c => c.id !== id));
       showToast("Customer deleted successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting customer:", error);
-      showToast("Error deleting customer", "error");
+      showToast(`Error deleting customer: ${error.message}`, "error");
     }
   };
 
@@ -87,7 +93,16 @@ export default function CustomersPage() {
         createdAt: new Date().toISOString()
       };
       
-      await addDoc(collection(db, "customers"), docData);
+      const res = await fetch('/api/admin/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(docData)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create customer');
+      }
       
       showToast('Customer added successfully!');
       setIsAddModalOpen(false);

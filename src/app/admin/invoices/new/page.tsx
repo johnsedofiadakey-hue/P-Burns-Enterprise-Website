@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { db } from '@/lib/firebase'
-import { collection, addDoc } from 'firebase/firestore'
 
 export default function NewInvoicePage() {
   const [invoiceNumber, setInvoiceNumber] = useState(`INV-${Math.floor(1000 + Math.random() * 9000)}`)
@@ -36,15 +34,20 @@ export default function NewInvoicePage() {
     setLoading(true)
     
     try {
-      await addDoc(collection(db, "invoices"), {
-        invoiceNumber,
-        customer,
-        date,
-        status,
-        items,
-        total,
-        createdAt: new Date().toISOString()
+      const res = await fetch('/api/admin/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceNumber,
+          customer,
+          date,
+          status,
+          items,
+          total
+        })
       });
+      
+      if (!res.ok) throw new Error('Failed to create invoice');
       
       alert('Invoice created successfully!')
       router.push('/admin/invoices')
