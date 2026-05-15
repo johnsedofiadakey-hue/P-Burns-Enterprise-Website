@@ -4,6 +4,16 @@ import { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
+function getDeviceType(userAgent: string, isMobile: boolean) {
+  if (!userAgent) return isMobile ? '📱 Mobile' : '💻 Desktop';
+  
+  if (/iPad|Tablet/i.test(userAgent)) return '📟 Tablet';
+  if (/iPhone/i.test(userAgent)) return '🍏 iPhone';
+  if (/Android/i.test(userAgent)) return '🤖 Android';
+  
+  return isMobile ? '📱 Mobile' : '💻 Desktop';
+}
+
 export default function MarketInsightsPage() {
   const [insights, setInsights] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -136,7 +146,7 @@ export default function MarketInsightsPage() {
                       {new Date(visit.timestamp).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">
-                      {visit.isMobile ? '📱 Mobile' : '💻 Desktop'}
+                      {getDeviceType(visit.userAgent, visit.isMobile)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 truncate max-w-[150px]">
                       {visit.referrer}
