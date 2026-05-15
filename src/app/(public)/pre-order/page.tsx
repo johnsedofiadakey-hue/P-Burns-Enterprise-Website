@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 const preOrderItems = [
   { id: '1', name: 'Premium Ceramic Tiles (Wood Finish)', arrival: 'June 2026', price: 120.00 },
@@ -14,6 +16,31 @@ export default function PreOrderPage() {
   const [email, setEmail] = useState('')
   const [customItemName, setCustomItemName] = useState('')
   const [customDescription, setCustomDescription] = useState('')
+  
+  const [trackId, setTrackId] = useState('')
+  const [trackResult, setTrackResult] = useState<any>(null)
+  const [trackLoading, setTrackLoading] = useState(false)
+
+  const handleTrack = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setTrackLoading(true)
+    setTrackResult(null)
+    try {
+      const docRef = doc(db, 'pre_orders', trackId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        setTrackResult(docSnap.data());
+      } else {
+        alert('No pre-order found with that ID.');
+      }
+    } catch (error) {
+      console.error("Error tracking pre-order:", error);
+      alert('An error occurred while tracking.');
+    } finally {
+      setTrackLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,6 +228,60 @@ export default function PreOrderPage() {
                 Submit Pre-Order Request
               </button>
             </form>
+          </div>
+        </div>
+
+        {/* Tracking Section */}
+        <div className="mt-16 bg-white p-8 rounded-2xl shadow-xl shadow-charcoal-900/5 border border-gray-100">
+          <div className="max-w-3xl">
+            <h2 className="text-xl font-serif font-bold text-[#111111] mb-2">Track Your Pre-Order</h2>
+            <p className="text-gray-600 mb-6">Enter your Tracking ID to check the status of your request.</p>
+            
+            <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-4">
+              <input 
+                type="text" 
+                value={trackId}
+                onChange={(e) => setTrackId(e.target.value)}
+                required 
+                placeholder="Enter Tracking ID (e.g. xY7z...)"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all" 
+              />
+              <button 
+                type="submit"
+                disabled={trackLoading}
+                className="px-8 py-3 bg-[#111111] text-white font-bold uppercase tracking-wider text-sm rounded-full hover:bg-gold-600 transition-colors shadow-lg shadow-charcoal-900/20 disabled:bg-gray-400"
+              >
+                {trackLoading ? 'Searching...' : 'Track Status'}
+              </button>
+            </form>
+
+            {trackResult && (
+              <div className="mt-8 p-6 bg-gold-50/20 rounded-xl border border-gold-100">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Status</span>
+                    <div className="text-lg font-bold text-[#111111] mt-1 capitalize">
+                      {trackResult.status === 'pending' ? '⏳ Pending Review' : 
+                       trackResult.status === 'approved' ? '✅ Approved' : 
+                       trackResult.status === 'shipped' ? '🚢 Shipped' : 
+                       trackResult.status === 'arrived' ? '📍 Arrived' : 
+                       trackResult.status}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Item</span>
+                    <div className="text-sm font-bold text-[#111111] mt-1">{trackResult.item}</div>
+                    <div className="text-xs text-gray-500">Qty: {trackResult.quantity}</div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Estimated Arrival</span>
+                    <div className="text-sm font-bold text-[#111111] mt-1">
+                      {trackResult.estimatedArrival || 'TBD (To Be Determined)'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
