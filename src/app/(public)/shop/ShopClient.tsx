@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -16,9 +16,27 @@ export default function ShopClient({ products, categories }: ShopClientProps) {
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
 
+  useEffect(() => {
+    if (!searchQuery) return;
+    
+    const timer = setTimeout(() => {
+      fetch('/api/analytics', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'search',
+          query: searchQuery,
+          resultsCount: filteredProducts.length
+        })
+      }).catch(() => {});
+    }, 1500); // Debounce for 1.5 seconds
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory ? product.category === selectedCategory : true
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const words = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
+    const matchesSearch = words.length === 0 || words.every(word => product.name.toLowerCase().includes(word))
     const matchesMinPrice = minPrice ? product.price >= parseFloat(minPrice) : true
     const matchesMaxPrice = maxPrice ? product.price <= parseFloat(maxPrice) : true
     return matchesCategory && matchesSearch && matchesMinPrice && matchesMaxPrice

@@ -22,6 +22,8 @@ export default function MarketInsightsPage() {
   const [totalVisits, setTotalVisits] = useState(0)
   const [mobilePercentage, setMobilePercentage] = useState(0)
   const [topPages, setTopPages] = useState<{path: string, count: number}[]>([])
+  const [topSearches, setTopSearches] = useState<{query: string, count: number}[]>([])
+  const [avgTimeSpent, setAvgTimeSpent] = useState(0)
 
   useEffect(() => {
     const fetchInsights = async () => {
@@ -60,6 +62,26 @@ export default function MarketInsightsPage() {
           
         setTopPages(sortedPages);
         
+        // Calculate top searches
+        const searches = data.filter(d => d.type === 'search');
+        const searchCounts: Record<string, number> = {};
+        searches.forEach(s => {
+          const query = s.query || '';
+          if (query) {
+            searchCounts[query] = (searchCounts[query] || 0) + 1;
+          }
+        });
+        const sortedSearches = Object.entries(searchCounts)
+          .map(([query, count]) => ({ query, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        setTopSearches(sortedSearches);
+        
+        // Calculate average time spent
+        const timeSpents = data.filter(d => d.type === 'timespent');
+        const totalSeconds = timeSpents.reduce((acc, curr) => acc + (curr.timeSpentSeconds || 0), 0);
+        const avgTime = timeSpents.length > 0 ? Math.round(totalSeconds / timeSpents.length) : 0;
+        setAvgTimeSpent(avgTime);
       } catch (error) {
         console.error("Error fetching insights:", error)
       } finally {
@@ -156,6 +178,43 @@ export default function MarketInsightsPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h3 className="text-lg font-bold text-[#111111]">Top Searches</h3>
+          </div>
+          <div className="p-0">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-widest">Search Query</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase tracking-widest">Count</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-50">
+                {topSearches.map((search, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#111111]">"{search.query}"</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">{search.count}</td>
+                  </tr>
+                ))}
+                {topSearches.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="px-6 py-4 text-center text-sm text-gray-500">No search data yet</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center items-center">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Average Time Spent</h3>
+          <div className="text-5xl font-serif font-bold text-gold-600">{avgTimeSpent}s</div>
+          <p className="text-sm text-gray-500 mt-2">Per tracked session</p>
         </div>
       </div>
     </div>
